@@ -30,7 +30,7 @@ const SignUp = () => {
     <div className="flex h-screen flex-col items-center justify-center">
       <div className="mt-16 w-full md:mt-0 md:w-2/5">
         <div className="relative z-10 h-auto overflow-hidden rounded-lg border-b-2 border-gray-300 bg-white p-8 px-7 py-10 shadow-2xl">
-          <h3 className="mb-6 text-center text-2xl font-medium font-bold">アカウント登録</h3>
+          <h3 className="mb-6 text-center text-2xl font-bold">アカウント登録</h3>
           <form onSubmit={handleSubmit}>
             <p className="text-red-500">{errorMessage}</p>
             <label>
@@ -54,14 +54,14 @@ const SignUp = () => {
               />
             </label>
             <div className="block">
-              <button className="w-full rounded-lg bg-[#9117f5] px-3 py-4 font-medium text-white" type="submit">
+              <button className="mt-5 w-full rounded-lg bg-black px-3 py-4 font-medium text-white" type="submit">
                 アカウント登録
               </button>
             </div>
           </form>
           <p className="link link-primary m-4 text-center">
             すでにアカウントをお持ちの場合は
-            <Link className="text-blue-700" href="/login">
+            <Link className="text-blue-700 font-bold" href="/login">
               こちら
             </Link>
             からログインしてください
