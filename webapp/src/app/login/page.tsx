@@ -30,9 +30,9 @@ const Login = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center">
+    <div className="flex h-screen bg-gradient-to-br from-blue-500 to-indigo-600 flex-col items-center justify-center">
       <div className="mt-16 w-full md:mt-0 md:w-2/5">
-        <div className="relative z-10 h-auto overflow-hidden rounded-lg border-b-2 border-gray-300 bg-white p-8 px-7 py-10 shadow-2xl">
+        <div className="relative z-10 h-auto overflow-hidden rounded-lg border-b-2 border-gray-300 bg-white px-10 py-16 shadow-2xl">
           <h3 className="mb-6 text-center text-2xl font-bold">ログイン</h3>
           <form onSubmit={handleSubmit}>
             <p className="text-red-500">{errorMessage}</p>
