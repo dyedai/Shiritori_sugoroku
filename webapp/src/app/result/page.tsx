@@ -20,7 +20,7 @@ export default function ResultsScreen() {
   };
 
   const handleRetryClick = () => {
-    router.push("/game"); // Redirect to game start page
+    router.push("/wait"); // Redirect to game start page
   };
 
   return (
@@ -41,10 +41,10 @@ export default function ResultsScreen() {
         {/* Buttons for Home and Retry */}
         <div className="flex pt-6 space-x-4 w-full">
           <Button variant="ghost" className="text-xl  w-1/2 py-7 border border-black" onClick={handleHomeClick}>
-            <Link href="/">ホームに戻る</Link>
+            ホームに戻る
           </Button>
           <Button className="text-xl py-7 w-1/2" onClick={handleRetryClick}>
-            <Link href="/wait">もう一度プレイ</Link>
+            もう一度プレイ
           </Button>
         </div>
 
