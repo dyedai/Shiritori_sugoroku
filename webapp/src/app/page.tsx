@@ -38,7 +38,7 @@ export default function Component() {
           </div>
           <span className="text-5xl font-semibold">→</span>
           <div className="flex items-center">
-            <span className="text-5xl font-semibold text-primary animate-pulse">アイディア</span>
+            <span className="text-5xl font-semibold text-primary animate-pulse">ちーむびー</span>
           </div>
         </div>
 
