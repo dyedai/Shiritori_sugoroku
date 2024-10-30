@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Twitter, Instagram } from "lucide-react"; // Icons for social media
-import Link from "next/link";
 
 export default function ResultsScreen() {
   const router = useRouter(); // To handle navigation
