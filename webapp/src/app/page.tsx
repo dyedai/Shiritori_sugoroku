@@ -43,9 +43,11 @@ export default function Component() {
         </div>
 
         <div className="space-y-6">
-          <Button className="w-full text-2xl py-8" size="lg">
-            <Dice5 className="mr-4 h-8 w-8" /> <Link href="/wait">ゲームスタート</Link>
-          </Button>
+          <Link href="/wait">
+            <Button className="w-full text-2xl py-8" size="lg">
+              <Dice5 className="mr-4 h-8 w-8" /> ゲームスタート
+            </Button>
+          </Link>
 
           {/* Dialog for Game Explanation */}
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
