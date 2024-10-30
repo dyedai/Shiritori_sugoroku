@@ -19,9 +19,9 @@ export default function Component() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br flex flex-col items-center justify-center p-15">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-indigo-600 flex flex-col items-center justify-center p-15">
       <div className="max-w-3xl w-full bg-white bg-opacity-90 rounded-lg shadow-2xl p-12 space-y-12">
-        <h1 className="text-6xl font-bold text-center text-primary animate-bounce duration-1000 pt-6">すごろく＆しりとり</h1>
+        <h1 className="text-5xl font-bold text-center text-primary  duration-1000 pt-6">すごろく＆しりとり</h1>
 
         <div className="flex justify-center space-x-8 items-center pb-3">
           <div
@@ -38,7 +38,7 @@ export default function Component() {
           </div>
           <span className="text-5xl font-semibold">→</span>
           <div className="flex items-center">
-            <span className="text-5xl font-semibold text-primary animate-pulse">ちーむびー</span>
+            <span className="text-5xl font-semibold text-primary animate-pulse">アイディア</span>
           </div>
         </div>
 
