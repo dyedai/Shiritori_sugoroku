@@ -5,9 +5,14 @@ import { motion } from "framer-motion";
 interface RouletteProps {
   onResult: (result: number) => void; // 結果を渡すコールバック関数
   currentPlayer: number; // 現在のプレイヤー番号
+  isLarge: boolean; // ルーレットが大きく表示されるか
 }
 
-const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer }) => {
+const Roulette: React.FC<RouletteProps> = ({
+  onResult,
+  currentPlayer,
+  isLarge,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
@@ -31,7 +36,7 @@ const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const radius = 80; // 半径を調整
+    const radius = isLarge ? 200 : 80; // サイズを切り替え
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const anglePerSegment = (2 * Math.PI) / segments.length; // 各セグメントの角度
@@ -51,7 +56,7 @@ const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer }) => {
 
       // 数字を描画
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 16px Arial"; // フォントサイズを調整
+      ctx.font = isLarge ? "bold 20px Arial" : "bold 10px Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       const textAngle = startAngle + anglePerSegment / 2;
@@ -91,7 +96,7 @@ const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer }) => {
     const selectedNumber = segments[selectedSegmentIndex];
 
     setSelectedNumber(selectedNumber);
-    onResult(selectedNumber); // 親コンポーネントに結果を渡す
+    onResult(selectedNumber); // 結果を親コンポーネントに渡す
   };
 
   // コンポーネントがマウントまたは更新されるたびにルーレットホイールを描画
@@ -100,44 +105,60 @@ const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer }) => {
   }, [rotation]);
 
   return (
-    <div className="flex flex-col items-center justify-center p-5 bg-gray-100">
-      <div className="relative w-[190px] h-[190px]">
+    <div
+      className={`${
+        isLarge
+          ? "flex items-center justify-center fixed inset-0 bg-gray-800 bg-opacity-75 z-50"
+          : "fixed bottom-4 right-4"
+      }`}
+    >
+      <div
+        className={`relative ${
+          isLarge ? "w-[400px] h-[400px]" : "w-[160px] h-[160px]"
+        }`}
+      >
         {/* ゴールドの枠 */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-xl"></div>
+        <div
+          className={`absolute inset-0 rounded-full ${
+            isLarge
+              ? "bg-gradient-to-br from-yellow-600 to-yellow-800"
+              : "bg-gradient-to-br from-yellow-600 to-yellow-800"
+          } shadow-xl`}
+        ></div>
         {/* ルーレットホイール */}
         <motion.canvas
           ref={canvasRef}
-          width={160}
-          height={160} // Canvasサイズを変更
-          className="rounded-full absolute top-[9px] left-[9px] transform -translate-x-1/2 -translate-y-1/2 border-[6px] border-white"
+          width={isLarge ? 400 : 160}
+          height={isLarge ? 400 : 160}
+          className="rounded-full absolute"
           animate={{ rotate: rotation }}
           transition={{ duration: 3, ease: "easeOut" }}
         ></motion.canvas>
-        {/* 中央の装飾 */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-700 shadow-lg border-2 border-white flex items-center justify-center">
-          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-inner"></div>
-        </div>
         {/* 矢印のマーカー */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-[5px]">
-          <div className="w-4 h-4 bg-yellow-500 transform rotate-45 border-2 border-white shadow-lg"></div>
+        <div
+          className={`absolute top-0 left-1/2 transform -translate-x-1/2 ${
+            isLarge ? "w-8 h-8" : "w-4 h-4"
+          }`}
+        >
+          <div className="bg-yellow-500 transform rotate-45 border-2 border-black shadow-lg"></div>
         </div>
       </div>
 
-      <button
-        onClick={handleStart}
-        className="mt-6 px-6 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300"
-        disabled={isSpinning}
-      >
-        {isSpinning ? "回転中..." : "スタート"}
-      </button>
-
-      {selectedNumber !== null && (
-        <div className="mt-4 text-xl font-bold">結果: {selectedNumber}</div>
+      {isLarge && (
+        <button
+          onClick={handleStart}
+          className="mt-6 px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300"
+          disabled={isSpinning}
+        >
+          {isSpinning ? "回転中..." : "スタート"}
+        </button>
       )}
 
-      <div className="mt-2 text-lg font-bold">
-        プレイヤー {currentPlayer} の番
-      </div>
+      {selectedNumber !== null && isLarge && (
+        <div className="mt-4 text-xl font-bold text-white">
+          プレイヤー {currentPlayer} の結果: {selectedNumber}
+        </div>
+      )}
     </div>
   );
 };

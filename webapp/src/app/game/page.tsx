@@ -7,48 +7,44 @@ const goal = 100;
 const squareSize = 32;
 
 export default function Game() {
-  const [gameStarted, setGameStarted] = useState(false);
   const [playerPositions, setPlayerPositions] = useState([0, 0, 0, 0]); // プレイヤー4人分
   const [currentPlayer, setCurrentPlayer] = useState(0); // 現在のプレイヤー
-  const [diceImagesLoaded, setDiceImagesLoaded] = useState(false); // サイコロ画像の読み込み状態
-  const [playerImagesLoaded, setPlayerImagesLoaded] = useState(false); // プレイヤー画像の読み込み状態
+  const [isRouletteLarge, setIsRouletteLarge] = useState(false); // ルーレットの表示状態
+  const [playerImages, setPlayerImages] = useState<HTMLImageElement[]>([]); // プレイヤー画像
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // プレイヤーの画像を読み込む
-  const playerImages = [new Image(), new Image(), new Image(), new Image()];
-  playerImages[0].src = "/image/koma/koma1.png";
-  playerImages[1].src = "/image/koma/koma2.png";
-  playerImages[2].src = "/image/koma/koma3.png";
-  playerImages[3].src = "/image/koma/koma4.png";
-
-  // プレイヤー画像がすべて読み込まれたかを確認
+  // プレイヤー画像をロード
   useEffect(() => {
-    let loadedImages = 0;
-    const totalImages = playerImages.length;
+    const loadImages = async () => {
+      const images: HTMLImageElement[] = [];
+      const sources = [
+        "/image/koma/koma1.png",
+        "/image/koma/koma2.png",
+        "/image/koma/koma3.png",
+        "/image/koma/koma4.png",
+      ];
 
-    playerImages.forEach((img) => {
-      img.onload = () => {
-        loadedImages += 1;
-        if (loadedImages === totalImages) {
-          setPlayerImagesLoaded(true);
-        }
-      };
-    });
+      for (const src of sources) {
+        const img = new Image();
+        img.src = src;
+        await new Promise((resolve) => {
+          img.onload = resolve;
+        });
+        images.push(img);
+      }
+
+      setPlayerImages(images);
+    };
+
+    loadImages();
   }, []);
-
-  // 初期描画を行う
-  useEffect(() => {
-    if (playerImagesLoaded) {
-      drawField();
-    }
-  }, [playerImagesLoaded, playerPositions]);
 
   // フィールド描画
   const drawField = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    if (!ctx || !playerImagesLoaded) return;
+    if (!ctx) return;
 
     const width = canvas.width;
     const height = canvas.height;
@@ -89,13 +85,15 @@ export default function Game() {
     playerPositions.forEach((position, index) => {
       const playerX = 50 * position + 70 - charSize / 2;
       const playerY = baseYPos[index];
-      ctx.drawImage(
-        playerImages[index],
-        playerX,
-        playerY - charSize,
-        charSize,
-        charSize
-      );
+      if (playerImages[index]) {
+        ctx.drawImage(
+          playerImages[index],
+          playerX,
+          playerY - charSize,
+          charSize,
+          charSize
+        );
+      }
     });
   };
 
@@ -112,10 +110,22 @@ export default function Game() {
 
     // 次のプレイヤーに切り替える
     setCurrentPlayer((prevPlayer) => (prevPlayer + 1) % 4);
+
+    // ルーレットを小さくする
+    setIsRouletteLarge(false);
   };
 
+  // ルーレットを表示する
+  const showRoulette = () => {
+    setIsRouletteLarge(true);
+  };
+
+  useEffect(() => {
+    drawField();
+  }, [playerPositions, playerImages]);
+
   return (
-    <div className="overflow-hidden">
+    <div className="relative overflow-hidden">
       <div
         style={{
           overflowX: "scroll",
@@ -131,12 +141,33 @@ export default function Game() {
           style={{ display: "block", margin: "0 auto" }}
         ></canvas>
       </div>
-      <div className="w-full flex justify-end items-center">
-        <Roulette
-          onResult={handleRouletteResult}
-          currentPlayer={currentPlayer + 1} // 1-based index
-        />
-      </div>
+
+      <button
+        onClick={showRoulette}
+        className="mt-4 px-6 py-2 bg-blue-500 text-white rounded"
+      >
+        ルーレットを回す
+      </button>
+
+      {isRouletteLarge && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+          <Roulette
+            onResult={handleRouletteResult}
+            currentPlayer={currentPlayer + 1}
+            isLarge={true} // 全画面表示
+          />
+        </div>
+      )}
+
+      {!isRouletteLarge && (
+        <div className="fixed bottom-4 right-4">
+          <Roulette
+            onResult={() => {}} // 小型モードでは結果処理なし
+            currentPlayer={currentPlayer + 1}
+            isLarge={false} // 小型表示
+          />
+        </div>
+      )}
     </div>
   );
 }
