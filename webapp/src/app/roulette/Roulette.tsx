@@ -2,7 +2,12 @@
 import React, { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-const Roulette: React.FC = () => {
+interface RouletteProps {
+  onResult: (result: number) => void; // 結果を渡すコールバック関数
+  currentPlayer: number; // 現在のプレイヤー番号
+}
+
+const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
@@ -86,6 +91,7 @@ const Roulette: React.FC = () => {
     const selectedNumber = segments[selectedSegmentIndex];
 
     setSelectedNumber(selectedNumber);
+    onResult(selectedNumber); // 親コンポーネントに結果を渡す
   };
 
   // コンポーネントがマウントまたは更新されるたびにルーレットホイールを描画
@@ -94,10 +100,8 @@ const Roulette: React.FC = () => {
   }, [rotation]);
 
   return (
-    <div className="flex flex-col items-center justify-center p-5  bg-gray-100">
+    <div className="flex flex-col items-center justify-center p-5 bg-gray-100">
       <div className="relative w-[190px] h-[190px]">
-        {" "}
-        {/* サイズを調整 */}
         {/* ゴールドの枠 */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-xl"></div>
         {/* ルーレットホイール */}
@@ -130,6 +134,10 @@ const Roulette: React.FC = () => {
       {selectedNumber !== null && (
         <div className="mt-4 text-xl font-bold">結果: {selectedNumber}</div>
       )}
+
+      <div className="mt-2 text-lg font-bold">
+        プレイヤー {currentPlayer} の番
+      </div>
     </div>
   );
 };

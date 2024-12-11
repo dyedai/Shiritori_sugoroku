@@ -9,26 +9,10 @@ const squareSize = 32;
 export default function Game() {
   const [gameStarted, setGameStarted] = useState(false);
   const [playerPositions, setPlayerPositions] = useState([0, 0, 0, 0]); // プレイヤー4人分
-  const [diceValues, setDiceValues] = useState([0, 0, 0, 0]); // プレイヤー4人分
+  const [currentPlayer, setCurrentPlayer] = useState(0); // 現在のプレイヤー
   const [diceImagesLoaded, setDiceImagesLoaded] = useState(false); // サイコロ画像の読み込み状態
   const [playerImagesLoaded, setPlayerImagesLoaded] = useState(false); // プレイヤー画像の読み込み状態
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // サイコロの目の画像を読み込む
-  const diceImages = [
-    new Image(),
-    new Image(),
-    new Image(),
-    new Image(),
-    new Image(),
-    new Image(),
-  ];
-  diceImages[0].src = "/image/dice/saikoro-illust1.png";
-  diceImages[1].src = "/image/dice/saikoro-illust2.png";
-  diceImages[2].src = "/image/dice/saikoro-illust3.png";
-  diceImages[3].src = "/image/dice/saikoro-illust4.png";
-  diceImages[4].src = "/image/dice/saikoro-illust5.png";
-  diceImages[5].src = "/image/dice/saikoro-illust6.png";
 
   // プレイヤーの画像を読み込む
   const playerImages = [new Image(), new Image(), new Image(), new Image()];
@@ -36,21 +20,6 @@ export default function Game() {
   playerImages[1].src = "/image/koma/koma2.png";
   playerImages[2].src = "/image/koma/koma3.png";
   playerImages[3].src = "/image/koma/koma4.png";
-
-  // サイコロ画像がすべて読み込まれたかを確認
-  useEffect(() => {
-    let loadedImages = 0;
-    const totalImages = diceImages.length;
-
-    diceImages.forEach((img) => {
-      img.onload = () => {
-        loadedImages += 1;
-        if (loadedImages === totalImages) {
-          setDiceImagesLoaded(true);
-        }
-      };
-    });
-  }, []);
 
   // プレイヤー画像がすべて読み込まれたかを確認
   useEffect(() => {
@@ -69,31 +38,17 @@ export default function Game() {
 
   // 初期描画を行う
   useEffect(() => {
-    if (diceImagesLoaded && playerImagesLoaded) {
+    if (playerImagesLoaded) {
       drawField();
     }
-  }, [diceImagesLoaded, playerImagesLoaded]);
-
-  // サイコロを振る
-  const rollDice = () => {
-    const rolls = [0, 0, 0, 0].map(() => Math.floor(Math.random() * 6) + 1); // 4人分のサイコロを振る
-    setDiceValues(rolls);
-
-    setPlayerPositions((prevPositions) =>
-      prevPositions.map((position, index) =>
-        Math.min(position + rolls[index], goal)
-      )
-    );
-
-    drawField();
-  };
+  }, [playerImagesLoaded, playerPositions]);
 
   // フィールド描画
   const drawField = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    if (!ctx || !diceImagesLoaded || !playerImagesLoaded) return; // 画像が読み込まれていない場合は描画しない
+    if (!ctx || !playerImagesLoaded) return;
 
     const width = canvas.width;
     const height = canvas.height;
@@ -142,26 +97,21 @@ export default function Game() {
         charSize
       );
     });
-
-    // サイコロの目を表示
-    playerPositions.forEach((_, index) => {
-      showDice(diceValues[index], 10, baseYPos[index] - 64, 40, 40);
-    });
   };
 
-  // サイコロの目を描画
-  const showDice = (
-    value: number,
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ) => {
-    const image = diceImages[value - 1];
-    const ctx = canvasRef.current?.getContext("2d");
-    if (ctx && image) {
-      ctx.drawImage(image, x, y, width, height);
-    }
+  // ルーレット結果を処理
+  const handleRouletteResult = (result: number) => {
+    setPlayerPositions((prevPositions) => {
+      const newPositions = [...prevPositions];
+      newPositions[currentPlayer] = Math.min(
+        newPositions[currentPlayer] + result,
+        goal
+      );
+      return newPositions;
+    });
+
+    // 次のプレイヤーに切り替える
+    setCurrentPlayer((prevPlayer) => (prevPlayer + 1) % 4);
   };
 
   return (
@@ -182,10 +132,11 @@ export default function Game() {
         ></canvas>
       </div>
       <div className="w-full flex justify-end items-center">
-        <Roulette />
+        <Roulette
+          onResult={handleRouletteResult}
+          currentPlayer={currentPlayer + 1} // 1-based index
+        />
       </div>
-      <br />
-      <button onClick={rollDice}>サイコロをふる</button>
     </div>
   );
 }
