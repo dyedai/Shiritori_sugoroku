@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Roulette from "../roulette/Roulette";
 
 // ゲームの初期設定
 const goal = 100;
@@ -14,7 +15,14 @@ export default function Game() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // サイコロの目の画像を読み込む
-  const diceImages = [new Image(), new Image(), new Image(), new Image(), new Image(), new Image()];
+  const diceImages = [
+    new Image(),
+    new Image(),
+    new Image(),
+    new Image(),
+    new Image(),
+    new Image(),
+  ];
   diceImages[0].src = "/image/dice/saikoro-illust1.png";
   diceImages[1].src = "/image/dice/saikoro-illust2.png";
   diceImages[2].src = "/image/dice/saikoro-illust3.png";
@@ -71,7 +79,11 @@ export default function Game() {
     const rolls = [0, 0, 0, 0].map(() => Math.floor(Math.random() * 6) + 1); // 4人分のサイコロを振る
     setDiceValues(rolls);
 
-    setPlayerPositions((prevPositions) => prevPositions.map((position, index) => Math.min(position + rolls[index], goal)));
+    setPlayerPositions((prevPositions) =>
+      prevPositions.map((position, index) =>
+        Math.min(position + rolls[index], goal)
+      )
+    );
 
     drawField();
   };
@@ -89,7 +101,10 @@ export default function Game() {
     // プレイヤーの縦の間隔を均等に設定
     const numPlayers = 4;
     const playerSpacing = height / (numPlayers + 1);
-    const baseYPos = Array.from({ length: numPlayers }, (_, index) => (index + 1) * playerSpacing);
+    const baseYPos = Array.from(
+      { length: numPlayers },
+      (_, index) => (index + 1) * playerSpacing
+    );
 
     // 背景の描画
     ctx.fillStyle = "#fff";
@@ -115,11 +130,17 @@ export default function Game() {
     }
 
     // プレイヤーの描画
-    const charSize = 80;
+    const charSize = 40;
     playerPositions.forEach((position, index) => {
       const playerX = 50 * position + 70 - charSize / 2;
       const playerY = baseYPos[index];
-      ctx.drawImage(playerImages[index], playerX, playerY - charSize, charSize, charSize);
+      ctx.drawImage(
+        playerImages[index],
+        playerX,
+        playerY - charSize,
+        charSize,
+        charSize
+      );
     });
 
     // サイコロの目を表示
@@ -129,7 +150,13 @@ export default function Game() {
   };
 
   // サイコロの目を描画
-  const showDice = (value: number, x: number, y: number, width: number, height: number) => {
+  const showDice = (
+    value: number,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) => {
     const image = diceImages[value - 1];
     const ctx = canvasRef.current?.getContext("2d");
     if (ctx && image) {
@@ -138,17 +165,24 @@ export default function Game() {
   };
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div className="overflow-hidden">
       <div
         style={{
           overflowX: "scroll",
           overflowY: "hidden",
           whiteSpace: "nowrap",
           width: "100%",
-          height: "70vh", // 高さを調整
         }}
       >
-        <canvas ref={canvasRef} width={50 * (goal + 1) + 100} height={600} style={{ display: "block", margin: "0 auto" }}></canvas>
+        <canvas
+          ref={canvasRef}
+          width={50 * (goal + 1) + 100}
+          height={300}
+          style={{ display: "block", margin: "0 auto" }}
+        ></canvas>
+      </div>
+      <div className="w-full flex justify-end items-center">
+        <Roulette />
       </div>
       <br />
       <button onClick={rollDice}>サイコロをふる</button>
