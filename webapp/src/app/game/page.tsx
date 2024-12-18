@@ -222,7 +222,7 @@ export default function Game() {
     <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 flex flex-col gap-6 p-6">
       <div className="flex flex-col w-fit gap-4 ">
         <div className="flex w-full items-center justify-center gap-4">
-          <Card className="w-full max-w-4xl shadow-lg">
+          <Card className="w-full max-w-5xl shadow-lg">
             <CardContent>
               <div className="overflow-x-auto overflow-y-hidden whitespace-nowrap pb-4">
                 <canvas
