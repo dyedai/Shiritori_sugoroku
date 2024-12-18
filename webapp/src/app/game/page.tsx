@@ -22,6 +22,7 @@ export default function Game() {
   const [lastCharacter, setLastCharacter] = useState("り");
   const [history, setHistory] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [timer, setTimer] = useState(30); // タイマーの状態
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRefs = useRef<HTMLInputElement[]>([]);
 
@@ -46,6 +47,37 @@ export default function Game() {
     };
     loadImages();
   }, []);
+
+  useEffect(() => {
+    drawField();
+  }, [playerPositions, playerImages]);
+
+  useEffect(() => {
+    if (isRouletteLarge || loading) return; // ルーレット表示中や確認中はタイマーを止める
+    const countdown = setInterval(() => {
+      setTimer((prev) => {
+        if (prev === 1) {
+          clearInterval(countdown);
+          forceNextTurn(); // 時間切れの場合に次のプレイヤーへ
+          return 30;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdown); // コンポーネントのクリーンアップ時にタイマーをリセット
+  }, [isRouletteLarge, loading, currentPlayer]);
+
+  const forceNextTurn = () => {
+    setWord([]);
+    setRouletteResult(null);
+    setTimeout(() => {
+      const nextPlayer = (currentPlayer + 1) % 4;
+      setCurrentPlayer(nextPlayer);
+      setIsRouletteLarge(true);
+      setLastCharacter("り");
+    }, 500); // 次のターンへの遷移
+  };
 
   const drawField = () => {
     const canvas = canvasRef.current;
@@ -87,9 +119,9 @@ export default function Game() {
       }
     }
 
-    const charSize = 40;
+    const charSize = 30;
     playerPositions.forEach((position, index) => {
-      const playerX = 50 * position + 70 - charSize / 2;
+      const playerX = 50 * position + 67 - charSize / 2;
       const playerY = baseYPos[index];
       if (playerImages[index]) {
         ctx.drawImage(
@@ -184,111 +216,106 @@ export default function Game() {
     }
   };
 
-  useEffect(() => {
-    drawField();
-  }, [playerPositions, playerImages]);
-
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200 flex flex-col gap-6 p-6">
-      <Card className="w-full max-w-4xl mx-auto shadow-lg">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-2xl font-bold text-center text-purple-800">
-            しりとりゲーム
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto overflow-y-hidden whitespace-nowrap pb-4">
-            <canvas
-              ref={canvasRef}
-              width={50 * (goal + 1) + 100}
-              height={300}
-              className="mx-auto rounded-lg shadow-inner"
-            ></canvas>
-          </div>
-          <div className="grid grid-cols-4 gap-4 mt-4">
-            {playerPositions.map((position, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <Avatar className="w-12 h-12 mb-2">
-                  <AvatarImage
-                    src={`/image/koma/koma${index + 1}.png`}
-                    alt={`Player ${index + 1}`}
-                  />
-                  <AvatarFallback>{index + 1}</AvatarFallback>
-                </Avatar>
-                <Progress value={(position / goal) * 100} className="w-full" />
-                <span className="text-sm font-medium mt-1">
-                  {position}/{goal}
-                </span>
+    <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 flex flex-col gap-6 p-6">
+      <div className="flex flex-col w-fit gap-4 ">
+        <div className="flex w-full items-center justify-center gap-4">
+          <Card className="w-full max-w-4xl shadow-lg">
+            <CardContent>
+              <div className="overflow-x-auto overflow-y-hidden whitespace-nowrap pb-4">
+                <canvas
+                  ref={canvasRef}
+                  width={50 * (goal + 1) + 100}
+                  height={340}
+                  className="mx-auto rounded-lg shadow-inner"
+                ></canvas>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {rouletteResult !== null && (
-        <Card className="w-full max-w-4xl mx-auto shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <h3 className="text-xl font-bold text-purple-800 mb-2">
-                プレイヤー{currentPlayer + 1}の番
-              </h3>
-              <p className="text-lg font-medium text-gray-700 mb-4">
-                {rouletteResult}文字の単語を入力してください
-              </p>
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <div className="w-12 h-12 border-2 border-purple-500 rounded-lg bg-purple-100 flex items-center justify-center text-xl font-bold text-purple-800">
-                  {lastCharacter}
-                </div>
-                {word.map((_, idx) => (
-                  <Input
-                    key={idx}
-                    ref={(el) => {
-                      inputRefs.current[idx] = el!;
-                    }}
-                    type="text"
-                    value={word[idx]}
-                    onChange={(e) => handleInputChange(e.target.value, idx)}
-                    onKeyDown={(e) => handleKeyDown(e, idx)}
-                    maxLength={1}
-                    className="w-12 h-12 text-center text-xl font-medium border-2 border-purple-300 focus:border-purple-500 rounded-lg"
-                  />
+            </CardContent>
+          </Card>
+          <Card className="w-fill h-full shadow-lg">
+            <CardContent>
+              <div className="grid grid-row-4 w-40 gap-4 mt-4">
+                {playerPositions.map((position, index) => (
+                  <div key={index} className="flex flex-col items-center">
+                    <Avatar className="w-9 h-9 mb-2">
+                      <AvatarImage
+                        src={`/image/koma/koma${index + 1}.png`}
+                        alt={`Player ${index + 1}`}
+                      />
+                      <AvatarFallback>{index + 1}</AvatarFallback>
+                    </Avatar>
+                    <Progress
+                      value={(position / goal) * 100}
+                      className="w-full"
+                    />
+                    <span className="text-sm font-medium mt-1">
+                      {position}/{goal}
+                    </span>
+                  </div>
                 ))}
               </div>
-              <Button
-                onClick={checkWord}
-                disabled={loading}
-                className="w-full max-w-xs text-lg font-bold py-6"
-                variant={loading ? "secondary" : "default"}
-              >
-                {loading ? "確認中..." : "確認する"}
-              </Button>
-              {wordResult && (
-                <p
-                  className={`mt-4 text-lg font-medium text-center ${
-                    wordResult.includes("存在します")
-                      ? "text-green-600"
-                      : "text-red-500"
-                  }`}
-                >
-                  {wordResult}
+            </CardContent>
+          </Card>
+        </div>
+        <div className="flex w-full h-[300px] justify-center gap-6 items-center">
+          <Card className="w-1/2 shadow-lg relative">
+            <CardContent className="p-6">
+              <div className="absolute top-2 right-4 flex items-center gap-2">
+                <span className="text-gray-700 text-sm">残り時間:</span>
+                <span className="text-purple-800 text-lg font-bold">
+                  {timer}s
+                </span>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-4">
+                <h3 className="text-xl font-bold text-purple-800 mb-2">
+                  プレイヤー{currentPlayer + 1}の番
+                </h3>
+                <p className="text-lg font-medium text-gray-700 mb-4">
+                  {rouletteResult}文字の単語を入力してください
                 </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card className="w-full max-w-4xl mx-auto shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-xl font-bold text-purple-800 flex items-center gap-2">
-            <History className="w-6 h-6" />
-            しりとり履歴
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-lg text-gray-700">{history.join(" → ")}</p>
-        </CardContent>
-      </Card>
+                <div className="flex items-center justify-center gap-2 mb-6">
+                  <div className="w-12 h-12 border-2 border-purple-500 rounded-lg bg-purple-100 flex items-center justify-center text-xl font-bold text-purple-800">
+                    {lastCharacter}
+                  </div>
+                  {word.map((_, idx) => (
+                    <Input
+                      key={idx}
+                      ref={(el) => {
+                        inputRefs.current[idx] = el!;
+                      }}
+                      type="text"
+                      value={word[idx]}
+                      onChange={(e) => handleInputChange(e.target.value, idx)}
+                      onKeyDown={(e) => handleKeyDown(e, idx)}
+                      maxLength={1}
+                      className="w-12 h-12 text-center text-xl font-medium border-2 border-purple-300 focus:border-purple-500 rounded-lg"
+                    />
+                  ))}
+                </div>
+                <Button
+                  onClick={checkWord}
+                  disabled={loading}
+                  className="w-full max-w-xs text-lg font-bold py-6"
+                  variant={loading ? "secondary" : "default"}
+                >
+                  {loading ? "確認中..." : "確認する"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="w-1/2 h-[300px] shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-xl font-bold text-purple-800 flex items-center gap-2">
+                <History className="w-6 h-6" />
+                しりとり履歴
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex w-full flex-wrap">{history.join(" → ")}</div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {isRouletteLarge && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
