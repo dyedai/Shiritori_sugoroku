@@ -23,6 +23,7 @@ export default function Game() {
   const [history, setHistory] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(30); // タイマーの状態
+  const [resultMessage, setResultMessage] = useState<string | null>(null); // 正解・失敗メッセージ用
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRefs = useRef<HTMLInputElement[]>([]);
 
@@ -53,32 +54,32 @@ export default function Game() {
   }, [playerPositions, playerImages]);
 
   useEffect(() => {
-    if (isRouletteLarge || loading) return; // ルーレット表示中や確認中はタイマーを止める
+    if (isRouletteLarge || loading || resultMessage) return; // ルーレットや確認中、メッセージ表示中はタイマー停止
     const countdown = setInterval(() => {
       setTimer((prev) => {
         if (prev === 1) {
           clearInterval(countdown);
-          forceNextTurn(); // 時間切れの場合に次のプレイヤーへ
+          setResultMessage("失敗！");
+          triggerNextTurn(); // 時間切れで次のプレイヤーへ
           return 30;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(countdown); // コンポーネントのクリーンアップ時にタイマーをリセット
-  }, [isRouletteLarge, loading, currentPlayer]);
+    return () => clearInterval(countdown); // クリーンアップ
+  }, [isRouletteLarge, loading, resultMessage, currentPlayer]);
 
-  const forceNextTurn = () => {
-    setWord([]);
-    setRouletteResult(null);
+  const triggerNextTurn = () => {
     setTimeout(() => {
+      setResultMessage(null); // メッセージを消す
       const nextPlayer = (currentPlayer + 1) % 4;
       setCurrentPlayer(nextPlayer);
       setIsRouletteLarge(true);
       setLastCharacter("り");
-    }, 500); // 次のターンへの遷移
+      setTimer(30); // タイマーをリセット
+    }, 2000); // 2秒後に次のターンに移行
   };
-
   const drawField = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -173,7 +174,8 @@ export default function Game() {
     }
 
     if (fullWord.slice(-1) === "ん") {
-      setWordResult("最後に「ん」が含まれているため終了です。");
+      setResultMessage("失敗！");
+      triggerNextTurn();
       return;
     }
 
@@ -187,32 +189,32 @@ export default function Game() {
       const data = await response.json();
 
       if (data.exists) {
-        setWordResult("この単語は存在します！");
-        setPlayerPositions((prevPositions) => {
-          const newPositions = [...prevPositions];
-          newPositions[currentPlayer] = Math.min(
-            newPositions[currentPlayer] + (rouletteResult || 0),
-            goal
-          );
-          return newPositions;
-        });
-        setHistory((prevHistory) => [...prevHistory, fullWord]);
-        setLastCharacter(fullWord.slice(-1));
+        setResultMessage("正解！");
+        setTimeout(() => {
+          setPlayerPositions((prevPositions) => {
+            const newPositions = [...prevPositions];
+            newPositions[currentPlayer] = Math.min(
+              newPositions[currentPlayer] + (rouletteResult || 0),
+              goal
+            );
+            return newPositions;
+          });
+          setHistory((prevHistory) => [...prevHistory, fullWord]);
+          setLastCharacter(fullWord.slice(-1));
+          setResultMessage(null);
+          triggerNextTurn(); // 正解時も次のターンへ移行
+        }, 2000);
       } else {
-        setWordResult("この単語は見つかりませんでした。");
+        setResultMessage("失敗！");
+        triggerNextTurn();
       }
     } catch {
-      setWordResult("エラーが発生しました。");
+      setResultMessage("失敗！");
+      triggerNextTurn();
     } finally {
       setLoading(false);
       setWord([]);
       setRouletteResult(null);
-
-      setTimeout(() => {
-        const nextPlayer = (currentPlayer + 1) % 4;
-        setCurrentPlayer(nextPlayer);
-        setIsRouletteLarge(true);
-      }, 2000); // Delay before next turn
     }
   };
 
@@ -329,6 +331,16 @@ export default function Game() {
               currentPlayer={currentPlayer + 1}
               isLarge={true}
             />
+          </div>
+        </div>
+      )}
+
+      {resultMessage && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
+          <div className="text-center flex items-center justify-center bg-white rounded-xl p-8 shadow-2xl">
+            <h2 className="text-5xl font-bold text-purple-800">
+              {resultMessage}
+            </h2>
           </div>
         </div>
       )}
