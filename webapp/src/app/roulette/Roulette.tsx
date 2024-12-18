@@ -108,56 +108,56 @@ const Roulette: React.FC<RouletteProps> = ({
     <div
       className={`${
         isLarge
-          ? "flex items-center justify-center fixed inset-0 bg-gray-800 bg-opacity-75 z-50"
+          ? "flex flex-col items-center justify-center fixed inset-0 bg-gray-800 bg-opacity-75 z-50"
           : "fixed bottom-4 right-4"
       }`}
     >
       <div
         className={`relative ${
-          isLarge ? "w-[400px] h-[400px]" : "w-[160px] h-[160px]"
+          isLarge ? "w-[430px] h-[430px]" : "w-[160px] h-[160px]"
         }`}
       >
         {/* ゴールドの枠 */}
         <div
-          className={`absolute inset-0 rounded-full ${
-            isLarge
-              ? "bg-gradient-to-br from-yellow-600 to-yellow-800"
-              : "bg-gradient-to-br from-yellow-600 to-yellow-800"
-          } shadow-xl`}
+          className={`absolute inset-0 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-xl`}
         ></div>
         {/* ルーレットホイール */}
         <motion.canvas
           ref={canvasRef}
           width={isLarge ? 400 : 160}
           height={isLarge ? 400 : 160}
-          className="rounded-full absolute"
+          className={`rounded-full absolute  ${
+            isLarge ? "top-[16px] left-[16px]" : ""
+          }`}
           animate={{ rotate: rotation }}
           transition={{ duration: 3, ease: "easeOut" }}
         ></motion.canvas>
+        {/* 中央の装飾 */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-700 shadow-lg border-4 border-white flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-inner"></div>
+        </div>
+
         {/* 矢印のマーカー */}
-        <div
-          className={`absolute top-0 left-1/2 transform -translate-x-1/2 ${
-            isLarge ? "w-8 h-8" : "w-4 h-4"
-          }`}
-        >
-          <div className="bg-yellow-500 transform rotate-45 border-2 border-black shadow-lg"></div>
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4">
+          <div className="w-8 h-8 bg-yellow-500 transform rotate-45 border-2 border-white shadow-lg"></div>
         </div>
       </div>
 
       {isLarge && (
-        <button
-          onClick={handleStart}
-          className="mt-6 px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300"
-          disabled={isSpinning}
-        >
-          {isSpinning ? "回転中..." : "スタート"}
-        </button>
-      )}
-
-      {selectedNumber !== null && isLarge && (
-        <div className="mt-4 text-xl font-bold text-white">
-          プレイヤー {currentPlayer} の結果: {selectedNumber}
-        </div>
+        <>
+          {selectedNumber !== null && (
+            <div className="mt-4 text-xl font-bold text-white">
+              プレイヤー {currentPlayer} の結果: {selectedNumber}
+            </div>
+          )}
+          <button
+            onClick={handleStart}
+            className="mt-6 px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300"
+            disabled={isSpinning}
+          >
+            {isSpinning ? "回転中..." : "スタート"}
+          </button>
+        </>
       )}
     </div>
   );
