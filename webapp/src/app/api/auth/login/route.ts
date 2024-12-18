@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // JWT トークンを生成
     const token = await new SignJWT({ id: user.id, username: user.username })
       .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("1h")
+      .setExpirationTime("3h")
       .sign(SECRET_KEY);
 
     // HTTP-only Cookie にトークンを保存
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 3600, // 1時間
+      maxAge: 10800, // 1時間
     });
 
     return response;
