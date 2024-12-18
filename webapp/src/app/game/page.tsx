@@ -196,52 +196,48 @@ export default function Game() {
           style={{ display: "block", margin: "0 auto" }}
         ></canvas>
       </div>
-
+      {rouletteResult !== null && (
+        <div className="bg-gray-200 m-5 p-6 rounded-lg shadow-lg">
+          <p className="mb-2 text-lg font-bold">
+            プレイヤー{currentPlayer + 1}が{rouletteResult}
+            文字分の単語を入力してください。
+          </p>
+          <p className="mb-4 text-sm text-gray-600">
+            現在の最後の文字: <strong>{lastCharacter}</strong>
+          </p>
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-10 h-10 border rounded bg-gray-200 flex items-center justify-center">
+              <span>{lastCharacter}</span>
+            </div>
+            {word.map((_, idx) => (
+              <input
+                key={idx}
+                ref={(el) => (inputRefs.current[idx] = el!)}
+                type="text"
+                value={word[idx]}
+                onChange={(e) => handleInputChange(e.target.value, idx)}
+                onKeyDown={(e) => handleKeyDown(e, idx)}
+                maxLength={1}
+                className="w-10 h-10 border text-center rounded"
+              />
+            ))}
+          </div>
+          <button
+            onClick={checkWord}
+            disabled={loading}
+            className={`w-full mt-4 px-4 py-2 text-white rounded-lg ${
+              loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
+            }`}
+          >
+            {loading ? "確認中..." : "確認する"}
+          </button>
+          {wordResult && <p className="mt-4 text-red-500">{wordResult}</p>}
+        </div>
+      )}
       <div className="fixed bottom-0 left-0 w-full bg-gray-100 p-4">
         <h3 className="text-lg font-bold">しりとり履歴:</h3>
         <p className="text-base">{history.join(" → ")}</p>
       </div>
-
-      {rouletteResult !== null && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <p className="mb-2 text-lg font-bold">
-              プレイヤー{currentPlayer + 1}が{rouletteResult}
-              文字分の単語を入力してください。
-            </p>
-            <p className="mb-4 text-sm text-gray-600">
-              現在の最後の文字: <strong>{lastCharacter}</strong>
-            </p>
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-10 h-10 border rounded bg-gray-200 flex items-center justify-center">
-                <span>{lastCharacter}</span>
-              </div>
-              {word.map((_, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => (inputRefs.current[idx] = el!)}
-                  type="text"
-                  value={word[idx]}
-                  onChange={(e) => handleInputChange(e.target.value, idx)}
-                  onKeyDown={(e) => handleKeyDown(e, idx)}
-                  maxLength={1}
-                  className="w-10 h-10 border text-center rounded"
-                />
-              ))}
-            </div>
-            <button
-              onClick={checkWord}
-              disabled={loading}
-              className={`mt-4 px-4 py-2 text-white rounded-lg ${
-                loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
-              }`}
-            >
-              {loading ? "確認中..." : "確認する"}
-            </button>
-            {wordResult && <p className="mt-4 text-red-500">{wordResult}</p>}
-          </div>
-        </div>
-      )}
 
       {isRouletteLarge && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
