@@ -70,16 +70,6 @@ export default function Game() {
     return () => clearInterval(countdown); // クリーンアップ
   }, [isRouletteLarge, loading, resultMessage, currentPlayer]);
 
-  const triggerNextTurn = () => {
-    setTimeout(() => {
-      setResultMessage(null); // メッセージを消す
-      const nextPlayer = (currentPlayer + 1) % 4;
-      setCurrentPlayer(nextPlayer);
-      setIsRouletteLarge(true);
-      setLastCharacter("り");
-      setTimer(30); // タイマーをリセット
-    }, 2000); // 2秒後に次のターンに移行
-  };
   const drawField = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -174,8 +164,8 @@ export default function Game() {
     }
 
     if (fullWord.slice(-1) === "ん") {
-      setResultMessage("失敗！");
-      triggerNextTurn();
+      setResultMessage("失敗！「ん」で終わったため終了です。");
+      triggerNextTurn(); // 次のターンへ
       return;
     }
 
@@ -200,22 +190,32 @@ export default function Game() {
             return newPositions;
           });
           setHistory((prevHistory) => [...prevHistory, fullWord]);
-          setLastCharacter(fullWord.slice(-1));
+          setLastCharacter(fullWord.slice(-1)); // 最後の文字を次の単語の開始文字に設定
           setResultMessage(null);
-          triggerNextTurn(); // 正解時も次のターンへ移行
+          triggerNextTurn(); // 正解後、次のターンへ移行
         }, 2000);
       } else {
-        setResultMessage("失敗！");
+        setResultMessage("失敗！この単語は存在しません。");
         triggerNextTurn();
       }
     } catch {
-      setResultMessage("失敗！");
+      setResultMessage("エラーが発生しました。");
       triggerNextTurn();
     } finally {
       setLoading(false);
       setWord([]);
       setRouletteResult(null);
     }
+  };
+
+  const triggerNextTurn = () => {
+    setTimeout(() => {
+      setResultMessage(null); // メッセージを消す
+      const nextPlayer = (currentPlayer + 1) % 4;
+      setCurrentPlayer(nextPlayer);
+      setIsRouletteLarge(true);
+      setTimer(30); // タイマーをリセット
+    }, 2000); // 2秒後に次のターンに移行
   };
 
   return (
