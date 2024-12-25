@@ -13,17 +13,26 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source> <!-- Java 17 に変更 -->
+    <maven.compiler.target>17</maven.compiler.target> <!-- Java 17 に変更 -->
     <spring.boot.version>2.7.0</spring.boot.version> <!-- Spring Bootのバージョンを指定 -->
   </properties>
 
   <dependencies>
+    <!-- Spring Boot Web依存関係 -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
       <version>${spring.boot.version}</version> <!-- 依存関係のバージョン -->
     </dependency>
+    <!-- JUnit 5依存関係 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Spring Bootのテスト依存関係 -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -34,10 +43,21 @@
 
   <build>
     <plugins>
+      <!-- Spring Boot Mavenプラグイン -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version> <!-- プラグインのバージョン -->
+      </plugin>
+      <!-- Maven Compiler Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <source>17</source> <!-- Java 17に対応 -->
+          <target>17</target> <!-- Java 17に対応 -->
+        </configuration>
       </plugin>
     </plugins>
   </build>
