@@ -366,6 +366,54 @@
           "store_path": "/nix/store/0z5iwcvalafm3j2c5pfhllsfbxrbyzf4-postgresql-16.5"
         }
       }
+    },
+    "process-compose@latest": {
+      "last_modified": "2024-11-28T07:51:56Z",
+      "resolved": "github:NixOS/nixpkgs/226216574ada4c3ecefcbbec41f39ce4655f78ef#process-compose",
+      "source": "devbox-search",
+      "version": "1.40.1",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/iz6ckcr1s8vy71b3wqvs680g2mwpf9jk-process-compose-1.40.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/iz6ckcr1s8vy71b3wqvs680g2mwpf9jk-process-compose-1.40.1"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/7jw864z6wlzcirsz8fgaj2bw0f22izch-process-compose-1.40.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/7jw864z6wlzcirsz8fgaj2bw0f22izch-process-compose-1.40.1"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/mrdrciqg6zjrblgjaya6bxqd57knf09r-process-compose-1.40.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/mrdrciqg6zjrblgjaya6bxqd57knf09r-process-compose-1.40.1"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/0vq97wmm879440n8plsk1yjc1g28ai85-process-compose-1.40.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/0vq97wmm879440n8plsk1yjc1g28ai85-process-compose-1.40.1"
+        }
+      }
     }
   }
 }
