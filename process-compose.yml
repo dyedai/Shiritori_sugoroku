@@ -1,0 +1,17 @@
+# https://f1bonacc1.github.io/process-compose/
+version: "0.5"
+
+processes:
+  backend:
+    command: mvn spring-boot:run
+    depends_on:
+      mysql:
+        condition: "process_started"
+
+  webapp:
+    command: npm run dev
+    depends_on:
+      backend:
+        condition: "process_started"
+    availability:
+      restart: "always"
