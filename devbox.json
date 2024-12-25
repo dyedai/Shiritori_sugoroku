@@ -4,7 +4,8 @@
     "postgresql@latest",
     "nodejs@20",
     "jdk@latest",
-    "binutils@latest"
+    "binutils@latest",
+    "maven@latest"
   ],
   "shell": {
     "init_hook": [
