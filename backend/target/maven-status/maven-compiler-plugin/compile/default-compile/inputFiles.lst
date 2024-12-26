@@ -1,1 +1,7 @@
-/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/App.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/model/GameMessage.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/service/GameService.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/MavenAppApplication.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/model/GameState.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/handler/GameWebSocketHandler.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/model/Player.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/config/WebSocketConfig.java

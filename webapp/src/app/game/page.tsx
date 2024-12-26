@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Gamepad2, History } from "lucide-react";
 
 const goal = 100;
-const squareSize = 32;
 
 export default function Game() {
   const [playerPositions, setPlayerPositions] = useState([0, 0, 0, 0]);
@@ -18,14 +17,45 @@ export default function Game() {
   const [playerImages, setPlayerImages] = useState<HTMLImageElement[]>([]);
   const [rouletteResult, setRouletteResult] = useState<number | null>(null);
   const [word, setWord] = useState<string[]>([]);
-  const [wordResult, setWordResult] = useState<string | null>(null);
   const [lastCharacter, setLastCharacter] = useState("り");
   const [history, setHistory] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [timer, setTimer] = useState(30); // タイマーの状態
-  const [resultMessage, setResultMessage] = useState<string | null>(null); // 正解・失敗メッセージ用
+  const [timer, setTimer] = useState(30);
+  const [resultMessage, setResultMessage] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRefs = useRef<HTMLInputElement[]>([]);
+  const socketRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    const socket = new WebSocket("ws://localhost:8080/game");
+    socketRef.current = socket;
+
+    socket.onopen = () => {
+      console.log("WebSocket connected");
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("Received from server:", data);
+
+      if (data.type === "checkResult") {
+        handleCheckResult(data);
+      } else if (data.type === "gameState") {
+        updateGameState(data);
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
 
   useEffect(() => {
     const loadImages = async () => {
@@ -54,21 +84,21 @@ export default function Game() {
   }, [playerPositions, playerImages]);
 
   useEffect(() => {
-    if (isRouletteLarge || loading || resultMessage) return; // ルーレットや確認中、メッセージ表示中はタイマー停止
+    if (isRouletteLarge || resultMessage) return;
     const countdown = setInterval(() => {
       setTimer((prev) => {
         if (prev === 1) {
           clearInterval(countdown);
           setResultMessage("失敗！");
-          triggerNextTurn(); // 時間切れで次のプレイヤーへ
+          triggerNextTurn();
           return 30;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(countdown); // クリーンアップ
-  }, [isRouletteLarge, loading, resultMessage, currentPlayer]);
+    return () => clearInterval(countdown);
+  }, [isRouletteLarge, resultMessage]);
 
   const drawField = () => {
     const canvas = canvasRef.current;
@@ -78,13 +108,7 @@ export default function Game() {
 
     const width = canvas.width;
     const height = canvas.height;
-
     const numPlayers = 4;
-    const playerSpacing = height / (numPlayers + 1);
-    const baseYPos = Array.from(
-      { length: numPlayers },
-      (_, index) => (index + 1) * playerSpacing
-    );
 
     ctx.fillStyle = "#f3f4f6";
     ctx.fillRect(0, 0, width, height);
@@ -92,38 +116,75 @@ export default function Game() {
     ctx.font = "14px 'Noto Sans JP', sans-serif";
 
     for (let i = 0; i <= goal; i++) {
-      const xPos0 = 50 * i + 50;
-
-      for (let j = 0; j < 4; j++) {
+      const xPos = 50 * i + 50;
+      for (let j = 0; j < numPlayers; j++) {
         ctx.fillStyle = "#d1d5db";
-        ctx.fillRect(xPos0, baseYPos[j], squareSize, 8);
-        if (i === 0) {
-          ctx.fillStyle = "#4b5563";
-          ctx.fillText("START", xPos0, baseYPos[j] + 25);
-        } else if (i === goal) {
-          ctx.fillStyle = "#4b5563";
-          ctx.fillText("GOAL", xPos0, baseYPos[j] + 25);
-        } else if (i % 10 === 0) {
-          ctx.fillStyle = "#9ca3af";
-          ctx.fillText(i.toString(), xPos0 + 10, baseYPos[j] + 25);
-        }
+        ctx.fillRect(xPos, (j + 1) * 60, 32, 8);
+        if (i === 0) ctx.fillText("START", xPos, (j + 1) * 60 + 25);
+        else if (i === goal) ctx.fillText("GOAL", xPos, (j + 1) * 60 + 25);
+        else if (i % 10 === 0)
+          ctx.fillText(i.toString(), xPos + 10, (j + 1) * 60 + 25);
       }
     }
 
-    const charSize = 30;
-    playerPositions.forEach((position, index) => {
-      const playerX = 50 * position + 67 - charSize / 2;
-      const playerY = baseYPos[index];
+    playerPositions.forEach((pos, index) => {
       if (playerImages[index]) {
+        const playerX = 50 * pos + 67 - 15;
         ctx.drawImage(
           playerImages[index],
           playerX,
-          playerY - charSize,
-          charSize,
-          charSize
+          (index + 1) * 60 - 30,
+          30,
+          30
         );
       }
     });
+  };
+
+  const checkWord = () => {
+    const fullWord = lastCharacter + word.join("");
+    if (!/^[\u3040-\u309Fー]+$/.test(fullWord)) {
+      setResultMessage("ひらがなを入力してください！");
+      return;
+    }
+    if (!socketRef.current) return;
+
+    socketRef.current.send(
+      JSON.stringify({
+        type: "checkWord",
+        word: fullWord,
+        playerId: currentPlayer,
+      })
+    );
+    setWord([]);
+  };
+
+  const handleCheckResult = (data: any) => {
+    setResultMessage(data.valid ? "正解！" : "失敗！");
+    if (data.valid) {
+      setPlayerPositions((prev) => {
+        const newPositions = [...prev];
+        newPositions[currentPlayer] += rouletteResult || 0;
+        return newPositions;
+      });
+      setHistory((prev) => [...prev, lastCharacter + word.join("")]);
+      setLastCharacter((lastCharacter + word.join("")).slice(-1));
+    }
+    triggerNextTurn();
+  };
+
+  const updateGameState = (data: any) => {
+    setPlayerPositions(data.players.map((p: any) => p.position));
+    setCurrentPlayer(data.currentPlayerIndex);
+    setHistory(data.wordHistory);
+  };
+
+  const triggerNextTurn = () => {
+    setTimeout(() => {
+      setResultMessage(null);
+      setIsRouletteLarge(true);
+      setTimer(30);
+    }, 2000);
   };
 
   const handleRouletteResult = (result: number) => {
@@ -132,95 +193,9 @@ export default function Game() {
     setIsRouletteLarge(false);
   };
 
-  const handleInputChange = (value: string, index: number) => {
-    if (!/^[\u3040-\u309Fー]?$/.test(value)) return; // Allow only hiragana
-    const newWord = [...word];
-    newWord[index] = value;
-    setWord(newWord);
-
-    if (value && index < word.length - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === "Backspace" && !word[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const checkWord = async () => {
-    const fullWord = lastCharacter + word.join("");
-    if (fullWord.length !== rouletteResult) {
-      setWordResult(
-        `最後の文字を含めて${rouletteResult}文字を入力してください。`
-      );
-      return;
-    }
-    const isHiragana = /^[\u3040-\u309Fー]+$/.test(fullWord);
-    if (!isHiragana) {
-      setWordResult("ひらがなを入力してください。");
-      return;
-    }
-
-    if (fullWord.slice(-1) === "ん") {
-      setResultMessage("失敗！「ん」で終わったため終了です。");
-      triggerNextTurn(); // 次のターンへ
-      return;
-    }
-
-    setLoading(true);
-    setWordResult(null);
-
-    try {
-      const response = await fetch(
-        `/api/check-word?word=${encodeURIComponent(fullWord)}`
-      );
-      const data = await response.json();
-
-      if (data.exists) {
-        setResultMessage("正解！");
-        setTimeout(() => {
-          setPlayerPositions((prevPositions) => {
-            const newPositions = [...prevPositions];
-            newPositions[currentPlayer] = Math.min(
-              newPositions[currentPlayer] + (rouletteResult || 0),
-              goal
-            );
-            return newPositions;
-          });
-          setHistory((prevHistory) => [...prevHistory, fullWord]);
-          setLastCharacter(fullWord.slice(-1)); // 最後の文字を次の単語の開始文字に設定
-          setResultMessage(null);
-          triggerNextTurn(); // 正解後、次のターンへ移行
-        }, 2000);
-      } else {
-        setResultMessage("失敗！この単語は存在しません。");
-        triggerNextTurn();
-      }
-    } catch {
-      setResultMessage("エラーが発生しました。");
-      triggerNextTurn();
-    } finally {
-      setLoading(false);
-      setWord([]);
-      setRouletteResult(null);
-    }
-  };
-
-  const triggerNextTurn = () => {
-    setTimeout(() => {
-      setResultMessage(null); // メッセージを消す
-      const nextPlayer = (currentPlayer + 1) % 4;
-      setCurrentPlayer(nextPlayer);
-      setIsRouletteLarge(true);
-      setTimer(30); // タイマーをリセット
-    }, 2000); // 2秒後に次のターンに移行
-  };
-
   return (
     <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 flex flex-col gap-6 p-6">
-      <div className="flex flex-col w-fit gap-4 ">
+      <div className="flex flex-col w-fit gap-4">
         <div className="flex w-full items-center justify-center gap-4">
           <Card className="w-full max-w-5xl shadow-lg">
             <CardContent>
@@ -228,7 +203,7 @@ export default function Game() {
                 <canvas
                   ref={canvasRef}
                   width={50 * (goal + 1) + 100}
-                  height={340}
+                  height={300}
                   className="mx-auto rounded-lg shadow-inner"
                 ></canvas>
               </div>
@@ -287,8 +262,11 @@ export default function Game() {
                       }}
                       type="text"
                       value={word[idx]}
-                      onChange={(e) => handleInputChange(e.target.value, idx)}
-                      onKeyDown={(e) => handleKeyDown(e, idx)}
+                      onChange={(e) => {
+                        const newWord = [...word];
+                        newWord[idx] = e.target.value;
+                        setWord(newWord);
+                      }}
                       maxLength={1}
                       className="w-12 h-12 text-center text-xl font-medium border-2 border-purple-300 focus:border-purple-500 rounded-lg"
                     />
@@ -296,11 +274,9 @@ export default function Game() {
                 </div>
                 <Button
                   onClick={checkWord}
-                  disabled={loading}
                   className="w-full max-w-xs text-lg font-bold py-6"
-                  variant={loading ? "secondary" : "default"}
                 >
-                  {loading ? "確認中..." : "確認する"}
+                  確認する
                 </Button>
               </div>
             </CardContent>
@@ -318,7 +294,6 @@ export default function Game() {
           </Card>
         </div>
       </div>
-
       {isRouletteLarge && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
           <div className="text-center bg-white rounded-xl p-8 shadow-2xl">
@@ -334,7 +309,6 @@ export default function Game() {
           </div>
         </div>
       )}
-
       {resultMessage && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
           <div className="text-center flex items-center justify-center bg-white rounded-xl p-8 shadow-2xl">

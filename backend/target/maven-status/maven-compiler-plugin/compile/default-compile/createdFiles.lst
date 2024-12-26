@@ -1,2 +1,7 @@
-com/devbox/mavenapp/App.class
-com/devbox/mavenapp/ShiritoriController.class
+com/devbox/mavenapp/service/GameService.class
+com/devbox/mavenapp/handler/GameWebSocketHandler.class
+com/devbox/mavenapp/model/GameMessage.class
+com/devbox/mavenapp/model/GameState.class
+com/devbox/mavenapp/model/Player.class
+com/devbox/mavenapp/config/WebSocketConfig.class
+com/devbox/mavenapp/MavenAppApplication.class
