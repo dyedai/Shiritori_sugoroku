@@ -11,7 +11,8 @@ export default function WaitScreen() {
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [userName, setUserName] = useState<string>("");
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
   // Fetch authenticated user info
@@ -28,14 +29,14 @@ export default function WaitScreen() {
         if (res.ok) {
           const user = await res.json();
           setUserName(user.username);
-          console.log("Authenticated user:", user);
+          setUserId(user.id);
         } else {
           console.error("Failed to fetch user info:", await res.json());
-          router.push("/login"); // Redirect if user is not authenticated
+          router.push("/login");
         }
       } catch (error) {
         console.error("Error fetching user info:", error);
-        router.push("/login"); // Redirect if fetch fails
+        router.push("/login");
       }
     }
 
@@ -44,23 +45,23 @@ export default function WaitScreen() {
 
   // WebSocket connection and events
   useEffect(() => {
-    if (!userName) return;
+    if (!userName || !userId) return;
 
     const ws = new WebSocket("ws://localhost:8080/waiting");
     setSocket(ws);
 
     ws.onopen = () => {
-      console.log("WebSocket connected.");
-      ws.send(JSON.stringify({ type: "join", userName })); // Send userName to backend
+      ws.send(JSON.stringify({ type: "join", userName, userId }));
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log("Received message:", data);
 
       if (data.type === "playerUpdate") {
-        setPlayerCount(data.playerCount);
-        setPlayerNames(data.playerNames || []);
+        if (data.playerCount !== playerCount) setPlayerCount(data.playerCount);
+        if (JSON.stringify(data.playerNames) !== JSON.stringify(playerNames)) {
+          setPlayerNames(data.playerNames || []);
+        }
         if (data.playerCount >= 4) setIsReady(true);
       } else if (data.type === "startGame") {
         setCountdown(5);
@@ -68,7 +69,9 @@ export default function WaitScreen() {
           setCountdown((prev) => {
             if (prev !== null && prev > 1) return prev - 1;
             clearInterval(interval);
-            router.push("/game");
+            setTimeout(() => {
+              router.push("/game");
+            }, 0);
             return null;
           });
         }, 1000);
@@ -86,10 +89,12 @@ export default function WaitScreen() {
     return () => {
       ws.close();
     };
-  }, [router, userName]);
+  }, [router, userName, userId]);
 
   const handleHomeClick = () => {
-    router.push("/");
+    setTimeout(() => {
+      router.push("/");
+    }, 0);
   };
 
   if (!userName) {

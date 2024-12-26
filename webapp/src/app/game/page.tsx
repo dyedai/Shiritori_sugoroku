@@ -21,6 +21,7 @@ export default function Game() {
   const [history, setHistory] = useState<string[]>([]);
   const [timer, setTimer] = useState(30);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
+  const [playerId, setPlayerId] = useState<number | null>(null); // Current user's player ID
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
@@ -31,6 +32,12 @@ export default function Game() {
 
     socket.onopen = () => {
       console.log("WebSocket connected");
+      // Send player join message
+      socket.send(
+        JSON.stringify({
+          type: "join",
+        })
+      );
     };
 
     socket.onmessage = (event) => {
@@ -41,6 +48,9 @@ export default function Game() {
         handleCheckResult(data);
       } else if (data.type === "gameState") {
         updateGameState(data);
+      } else if (data.type === "assignPlayer") {
+        // Assign player ID to the current user
+        setPlayerId(data.playerId);
       }
     };
 
@@ -192,7 +202,6 @@ export default function Game() {
     setWord(Array(result - 1).fill(""));
     setIsRouletteLarge(false);
   };
-
   return (
     <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 flex flex-col gap-6 p-6">
       <div className="flex flex-col w-fit gap-4">
@@ -299,12 +308,15 @@ export default function Game() {
           <div className="text-center bg-white rounded-xl p-8 shadow-2xl">
             <h2 className="text-3xl font-bold text-purple-800 mb-6 flex items-center justify-center gap-2">
               <Gamepad2 className="w-8 h-8" />
-              プレイヤー{currentPlayer + 1}の番
+              {playerId === currentPlayer
+                ? "あなたの番"
+                : `プレイヤー${currentPlayer + 1}の番`}
             </h2>
             <Roulette
               onResult={handleRouletteResult}
               currentPlayer={currentPlayer + 1}
               isLarge={true}
+              isPlayerTurn={playerId === currentPlayer} // Pass if it's the player's turn
             />
           </div>
         </div>

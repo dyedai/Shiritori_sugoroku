@@ -15,9 +15,9 @@ public class MatchmakingHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(MatchmakingHandler.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
-    private final Map<String, String> sessionToUserName = new ConcurrentHashMap<>(); // セッションID -> ユーザー名
+    private final Map<String, Map<String, String>> sessionToPlayer = new ConcurrentHashMap<>(); // sessionId -> {username, userid}
     private static final int MAX_PLAYERS = 4;
-    private final List<String> playerNames = Collections.synchronizedList(new ArrayList<>());
+    private final List<Map<String, String>> players = Collections.synchronizedList(new ArrayList<>()); // List of players
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -33,32 +33,35 @@ public class MatchmakingHandler extends TextWebSocketHandler {
             Map<String, Object> payload = objectMapper.readValue(message.getPayload(), Map.class);
 
             if ("join".equals(payload.get("type"))) {
-                String userName = (String) payload.get("userName");
+    String userName = (String) payload.get("userName");
+    String userId = String.valueOf(payload.get("userId")); // userId を文字列に変換
 
-                // セッションが既に名前に関連付けられている場合は無視
-                if (sessionToUserName.containsKey(session.getId())) {
-                    logger.warn("Session {} already has a username associated.", session.getId());
-                    return;
-                }
+    // 残りのロジックはそのまま
+    boolean isDuplicate = players.stream()
+            .anyMatch(player -> player.get("userid").equals(userId) || player.get("username").equals(userName));
 
-                // 重複ユーザー名の確認
-                if (!playerNames.contains(userName)) {
-                    playerNames.add(userName);
-                    sessionToUserName.put(session.getId(), userName); // セッションに名前を紐付け
-                    logger.info("Player joined: {}", userName);
+    if (!isDuplicate) {
+        Map<String, String> player = new HashMap<>();
+        player.put("username", userName);
+        player.put("userid", userId);
 
-                    broadcastPlayerCount();
+        players.add(player);
+        sessionToPlayer.put(session.getId(), player);
 
-                    // プレイヤーが最大数に達した場合、ゲームを開始
-                    if (playerNames.size() == MAX_PLAYERS) {
-                        startGame();
-                    }
-                } else {
-                    logger.warn("Duplicate player name attempt: {}", userName);
-                    session.sendMessage(new TextMessage(
-                            objectMapper.writeValueAsString(Collections.singletonMap("error", "Username already taken."))));
-                }
-            }
+        logger.info("Player joined: {} ({})", userName, userId);
+
+        broadcastPlayerCount();
+
+        if (players.size() == MAX_PLAYERS) {
+            startGame();
+        }
+    } else {
+        logger.warn("Duplicate player attempt: {} ({})", userName, userId);
+        session.sendMessage(new TextMessage(
+                objectMapper.writeValueAsString(Collections.singletonMap("error", "Username or ID already taken."))));
+    }
+}
+
         } catch (Exception e) {
             logger.error("Error handling message: {}", message.getPayload(), e);
         }
@@ -69,21 +72,23 @@ public class MatchmakingHandler extends TextWebSocketHandler {
         logger.info("Player disconnected: sessionId={}, status={}", session.getId());
         sessions.remove(session.getId());
 
-        // 名前を削除
-        String userName = sessionToUserName.remove(session.getId());
-        if (userName != null) {
-            playerNames.remove(userName);
-            logger.info("Removed player: {}", userName);
+        // Remove player
+        Map<String, String> player = sessionToPlayer.remove(session.getId());
+        if (player != null) {
+            players.remove(player);
+            logger.info("Removed player: {} ({})", player.get("username"), player.get("userid"));
         }
 
         broadcastPlayerCount();
     }
 
     private void broadcastPlayerCount() {
+        logger.info("Broadcasting player count. Current players: {}", players);
+
         Map<String, Object> message = new HashMap<>();
         message.put("type", "playerUpdate");
-        message.put("playerCount", playerNames.size());
-        message.put("playerNames", playerNames);
+        message.put("playerCount", players.size());
+        message.put("players", players); // Broadcast players with username and userid
 
         broadcastMessage(message);
     }
@@ -99,6 +104,7 @@ public class MatchmakingHandler extends TextWebSocketHandler {
         String jsonMessage;
         try {
             jsonMessage = objectMapper.writeValueAsString(message);
+            logger.debug("Serialized broadcast message: {}", jsonMessage);
         } catch (Exception e) {
             logger.error("Error serializing message: {}", message, e);
             return;
