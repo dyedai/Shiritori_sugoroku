@@ -1,6 +1,182 @@
 {
   "lockfile_version": "1",
   "packages": {
+    "binutils@latest": {
+      "last_modified": "2024-12-08T19:40:50Z",
+      "resolved": "github:NixOS/nixpkgs/dd51f52372a20a93c219e8216fe528a648ffcbf4#binutils",
+      "source": "devbox-search",
+      "version": "2.43.1",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/gap4zjjs6azr3a8j6bfi589yczhyy7d6-binutils-wrapper-2.43.1",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/1wqxsgp2j65qv2vncrd5m7p8q3xavw5s-binutils-wrapper-2.43.1-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/zx6nzdca4mfv5ghq15rzzhkd2dvhhnb5-binutils-wrapper-2.43.1-info"
+            }
+          ],
+          "store_path": "/nix/store/gap4zjjs6azr3a8j6bfi589yczhyy7d6-binutils-wrapper-2.43.1"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/8hcwpiazwyh2kn29az830pvlfdvyxs2k-binutils-wrapper-2.43.1",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/nl55sjs5ndh3kna87waknk8a7xw85pij-binutils-wrapper-2.43.1-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/vhalsc5msl337y2kbjvxi2bfasdhqz08-binutils-wrapper-2.43.1-info"
+            }
+          ],
+          "store_path": "/nix/store/8hcwpiazwyh2kn29az830pvlfdvyxs2k-binutils-wrapper-2.43.1"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/n303i151wa7c6dsg9aj8s1cxcqw1dmwz-binutils-wrapper-2.43.1",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/093plyclxvwbpdga34l3pzx8jmwlcw8k-binutils-wrapper-2.43.1-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/0mpv94nj0c236qx6ar195a394hdc91h1-binutils-wrapper-2.43.1-info"
+            }
+          ],
+          "store_path": "/nix/store/n303i151wa7c6dsg9aj8s1cxcqw1dmwz-binutils-wrapper-2.43.1"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/x9as7x6f7cdgcskvvn3yp02m662krr7y-binutils-wrapper-2.43.1",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/87h706hbb2n41cpgjf3mkksp9ajwifcc-binutils-wrapper-2.43.1-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/gricp0nxhlv3snjv8q4bgbxxq54wiy5x-binutils-wrapper-2.43.1-info"
+            }
+          ],
+          "store_path": "/nix/store/x9as7x6f7cdgcskvvn3yp02m662krr7y-binutils-wrapper-2.43.1"
+        }
+      }
+    },
+    "jdk@latest": {
+      "last_modified": "2024-12-11T16:51:25Z",
+      "resolved": "github:NixOS/nixpkgs/5a48e3c2e435e95103d56590188cfed7b70e108c#jdk8",
+      "source": "devbox-search",
+      "version": "8u432-b06",
+      "systems": {
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/mb3yvj7mjkq3vypx87cr7cd20rqz4jw6-openjdk-8u432-b06",
+              "default": true
+            },
+            {
+              "name": "debug",
+              "path": "/nix/store/n4nxa8m57q2gf25ddvk8hgykmy0g7dq4-openjdk-8u432-b06-debug"
+            },
+            {
+              "name": "jre",
+              "path": "/nix/store/hpvwh9lngvssnvgrviiqxkdbpy24hhwx-openjdk-8u432-b06-jre"
+            }
+          ],
+          "store_path": "/nix/store/mb3yvj7mjkq3vypx87cr7cd20rqz4jw6-openjdk-8u432-b06"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/favadxnr3av2bcbihnkqlb8yk2xychgz-openjdk-8u432-b06",
+              "default": true
+            },
+            {
+              "name": "debug",
+              "path": "/nix/store/x1q606agf1ipa4idx7mjzi3j3hj7qpan-openjdk-8u432-b06-debug"
+            },
+            {
+              "name": "jre",
+              "path": "/nix/store/nx69y53spijrawyfzh6g0nz2qjr0iy9j-openjdk-8u432-b06-jre"
+            }
+          ],
+          "store_path": "/nix/store/favadxnr3av2bcbihnkqlb8yk2xychgz-openjdk-8u432-b06"
+        }
+      }
+    },
+    "maven@latest": {
+      "last_modified": "2024-11-16T04:25:12Z",
+      "resolved": "github:NixOS/nixpkgs/34a626458d686f1b58139620a8b2793e9e123bba#maven",
+      "source": "devbox-search",
+      "version": "3.9.9",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/34xhhbidynhnffp7jdihyg4i2kbxcfj8-maven-3.9.9",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/34xhhbidynhnffp7jdihyg4i2kbxcfj8-maven-3.9.9"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/m7igrfyvx2fk95hmr3yvlxch2yyg98l6-maven-3.9.9",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/m7igrfyvx2fk95hmr3yvlxch2yyg98l6-maven-3.9.9"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/h7iw6w5gfw6ylmcyxgfcdamf17k819yf-maven-3.9.9",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/h7iw6w5gfw6ylmcyxgfcdamf17k819yf-maven-3.9.9"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/5i6nxg6q0f20b4n5y37khzyhxypymaw9-maven-3.9.9",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/5i6nxg6q0f20b4n5y37khzyhxypymaw9-maven-3.9.9"
+        }
+      }
+    },
     "nodejs@20": {
       "last_modified": "2024-12-03T12:40:06Z",
       "plugin_version": "0.0.2",
@@ -188,6 +364,54 @@
             }
           ],
           "store_path": "/nix/store/0z5iwcvalafm3j2c5pfhllsfbxrbyzf4-postgresql-16.5"
+        }
+      }
+    },
+    "process-compose@latest": {
+      "last_modified": "2024-11-28T07:51:56Z",
+      "resolved": "github:NixOS/nixpkgs/226216574ada4c3ecefcbbec41f39ce4655f78ef#process-compose",
+      "source": "devbox-search",
+      "version": "1.40.1",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/iz6ckcr1s8vy71b3wqvs680g2mwpf9jk-process-compose-1.40.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/iz6ckcr1s8vy71b3wqvs680g2mwpf9jk-process-compose-1.40.1"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/7jw864z6wlzcirsz8fgaj2bw0f22izch-process-compose-1.40.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/7jw864z6wlzcirsz8fgaj2bw0f22izch-process-compose-1.40.1"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/mrdrciqg6zjrblgjaya6bxqd57knf09r-process-compose-1.40.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/mrdrciqg6zjrblgjaya6bxqd57knf09r-process-compose-1.40.1"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/0vq97wmm879440n8plsk1yjc1g28ai85-process-compose-1.40.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/0vq97wmm879440n8plsk1yjc1g28ai85-process-compose-1.40.1"
         }
       }
     }
