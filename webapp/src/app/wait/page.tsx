@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 export default function WaitScreen() {
   const router = useRouter();
   const [playerCount, setPlayerCount] = useState(0);
-  const [playerNames, setPlayerNames] = useState<string[]>([]);
+  const [players, setPlayers] = useState<
+    { userId: string; username: string }[]
+  >([]); // Updated to store both userId and username
   const [countdown, setCountdown] = useState<number | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
   const [isReady, setIsReady] = useState(false);
 
   // Fetch authenticated user info
@@ -29,14 +31,15 @@ export default function WaitScreen() {
         if (res.ok) {
           const user = await res.json();
           setUserName(user.username);
-          setUserId(user.id);
+          setUserId(user.id); // Store user ID
+          console.log("Authenticated user:", user);
         } else {
           console.error("Failed to fetch user info:", await res.json());
-          router.push("/login");
+          router.push("/login"); // Redirect if user is not authenticated
         }
       } catch (error) {
         console.error("Error fetching user info:", error);
-        router.push("/login");
+        router.push("/login"); // Redirect if fetch fails
       }
     }
 
@@ -51,17 +54,19 @@ export default function WaitScreen() {
     setSocket(ws);
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: "join", userName, userId }));
+      console.log("WebSocket connected.");
+      ws.send(
+        JSON.stringify({ type: "join", userName: userName, userId: userId }) // Send username and userid to backend
+      );
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log("Received message:", data);
 
       if (data.type === "playerUpdate") {
-        if (data.playerCount !== playerCount) setPlayerCount(data.playerCount);
-        if (JSON.stringify(data.playerNames) !== JSON.stringify(playerNames)) {
-          setPlayerNames(data.playerNames || []);
-        }
+        setPlayerCount(data.playerCount);
+        setPlayers(data.players || []); // Update the players array from the backend
         if (data.playerCount >= 4) setIsReady(true);
       } else if (data.type === "startGame") {
         setCountdown(5);
@@ -69,9 +74,7 @@ export default function WaitScreen() {
           setCountdown((prev) => {
             if (prev !== null && prev > 1) return prev - 1;
             clearInterval(interval);
-            setTimeout(() => {
-              router.push("/game");
-            }, 0);
+            router.push("/game");
             return null;
           });
         }, 1000);
@@ -92,9 +95,7 @@ export default function WaitScreen() {
   }, [router, userName, userId]);
 
   const handleHomeClick = () => {
-    setTimeout(() => {
-      router.push("/");
-    }, 0);
+    router.push("/");
   };
 
   if (!userName) {
@@ -114,7 +115,7 @@ export default function WaitScreen() {
 
         <div className="space-y-4">
           {Array(4)
-            .fill("")
+            .fill(null)
             .map((_, index) => (
               <motion.div
                 key={index}
@@ -126,9 +127,7 @@ export default function WaitScreen() {
               >
                 <span className="text-black">#{index + 1}</span>
                 <span className="text-black">
-                  {index < playerCount
-                    ? playerNames[index] || `Player ${index + 1}`
-                    : "募集中…"}
+                  {players[index]?.username || "募集中…"}
                 </span>
               </motion.div>
             ))}
