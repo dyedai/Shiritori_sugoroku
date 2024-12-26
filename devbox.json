@@ -3,13 +3,18 @@
   "packages": [
     "postgresql@latest",
     "nodejs@20",
-    "jdk@latest",
+    "jdk@17",
     "binutils@latest",
     "maven@latest",
     "process-compose@latest"
   ],
   "shell": {
-    "init_hook": ["echo 'Welcome to devbox!' > /dev/null"],
+    "shell": {
+      "init_hook": [
+        "export JAVA_HOME=/nix/store/abc123-openjdk-17.x",
+        "export PATH=$JAVA_HOME/bin:$PATH"
+      ]
+    },
     "scripts": {
       "test": ["echo \"Error: no test specified\" && exit 1"]
     }
