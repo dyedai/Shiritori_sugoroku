@@ -13,7 +13,7 @@ processes:
         command: "pg_isready"
 
   backend:
-    command: cd backend && mvn clean install && mvn spring-boot:run
+    command: cd backend && mvn spring-boot:run
     depends_on:
       postgresql:
         condition: "process_started"

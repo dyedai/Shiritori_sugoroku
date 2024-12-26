@@ -6,9 +6,10 @@ public class GameMessage {
     private boolean valid;
     private boolean gameOver;
     private int winner;
-    private int playerId; // このフィールドを追加
+    private int playerId; // プレイヤーID
+    private String userName; // ユーザー名を追加
 
-    // Getter と Setter を追加
+    // Getter と Setter
     public String getType() {
         return type;
     }
@@ -49,11 +50,19 @@ public class GameMessage {
         this.winner = winner;
     }
 
-    public int getPlayerId() { // 追加したフィールドの Getter
+    public int getPlayerId() {
         return playerId;
     }
 
-    public void setPlayerId(int playerId) { // 追加したフィールドの Setter
+    public void setPlayerId(int playerId) {
         this.playerId = playerId;
+    }
+
+    public String getUserName() { // 新たに追加された Getter
+        return userName;
+    }
+
+    public void setUserName(String userName) { // 新たに追加された Setter
+        this.userName = userName;
     }
 }
