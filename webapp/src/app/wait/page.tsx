@@ -10,39 +10,30 @@ export default function WaitScreen() {
   const [playerCount, setPlayerCount] = useState(0);
   const [players, setPlayers] = useState<
     { userId: string; username: string }[]
-  >([]); // Updated to store both userId and username
+  >([]);
+  const [roomId, setRoomId] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [userName, setUserName] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
-  const [isReady, setIsReady] = useState(false);
 
   // Fetch authenticated user info
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch("/api/auth/me", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
+        const res = await fetch("/api/auth/me");
         if (res.ok) {
           const user = await res.json();
           setUserName(user.username);
-          setUserId(user.id); // Store user ID
-          console.log("Authenticated user:", user);
+          setUserId(user.id);
         } else {
-          console.error("Failed to fetch user info:", await res.json());
-          router.push("/login"); // Redirect if user is not authenticated
+          router.push("/login");
         }
-      } catch (error) {
-        console.error("Error fetching user info:", error);
-        router.push("/login"); // Redirect if fetch fails
+      } catch (err) {
+        console.error("Error fetching user info:", err);
+        router.push("/login");
       }
     }
-
     fetchUser();
   }, [router]);
 
@@ -54,10 +45,7 @@ export default function WaitScreen() {
     setSocket(ws);
 
     ws.onopen = () => {
-      console.log("WebSocket connected.");
-      ws.send(
-        JSON.stringify({ type: "join", userName: userName, userId: userId }) // Send username and userid to backend
-      );
+      ws.send(JSON.stringify({ type: "join", userName, userId }));
     };
 
     ws.onmessage = (event) => {
@@ -66,33 +54,38 @@ export default function WaitScreen() {
 
       if (data.type === "playerUpdate") {
         setPlayerCount(data.playerCount);
-        setPlayers(data.players || []); // Update the players array from the backend
-        if (data.playerCount >= 4) setIsReady(true);
+        setPlayers(data.players || []);
+        setRoomId(data.roomId);
       } else if (data.type === "startGame") {
+        // Start the countdown
         setCountdown(5);
         const interval = setInterval(() => {
           setCountdown((prev) => {
             if (prev !== null && prev > 1) return prev - 1;
             clearInterval(interval);
-            router.push("/game");
+            router.push(
+              `/game?roomId=${data.roomId}&players=${encodeURIComponent(
+                JSON.stringify(data.players)
+              )}`
+            );
             return null;
           });
         }, 1000);
       }
     };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
+    ws.onerror = (err) => {
+      console.error("WebSocket error:", err);
     };
 
     ws.onclose = () => {
-      console.log("WebSocket disconnected.");
+      console.log("WebSocket closed.");
     };
 
     return () => {
       ws.close();
     };
-  }, [router, userName, userId]);
+  }, [userName, userId, router]);
 
   const handleHomeClick = () => {
     router.push("/");
@@ -118,7 +111,7 @@ export default function WaitScreen() {
             .fill(null)
             .map((_, index) => (
               <motion.div
-                key={index}
+                key={`player-${index}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: index < playerCount ? 1 : 0.3 }}
                 className={`flex justify-between items-center text-2xl font-bold py-4 px-6 rounded-md ${
@@ -145,7 +138,7 @@ export default function WaitScreen() {
       </div>
 
       <AnimatePresence>
-        {isReady && countdown !== null && (
+        {countdown !== null && (
           <motion.div
             initial={{ opacity: 0, scale: 1 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -159,7 +152,7 @@ export default function WaitScreen() {
               className="bg-white rounded-full w-80 h-80 flex items-center justify-center shadow-2xl"
             >
               <div className="text-center p-5">
-                <h2 className="text-2xl font-bold mb-6 pt-7 ">
+                <h2 className="text-2xl font-bold mb-6 pt-7">
                   ゲームスタートまで
                 </h2>
                 <p className="text-7xl font-bold text-blue-600">{countdown}</p>
