@@ -85,47 +85,39 @@
         }
       }
     },
-    "jdk@latest": {
-      "last_modified": "2024-12-11T16:51:25Z",
-      "resolved": "github:NixOS/nixpkgs/5a48e3c2e435e95103d56590188cfed7b70e108c#jdk8",
+    "jdk@17": {
+      "last_modified": "2024-12-03T12:40:06Z",
+      "resolved": "github:NixOS/nixpkgs/566e53c2ad750c84f6d31f9ccb9d00f823165550#jdk17",
       "source": "devbox-search",
-      "version": "8u432-b06",
+      "version": "17.0.13+11",
       "systems": {
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/mb3yvj7mjkq3vypx87cr7cd20rqz4jw6-openjdk-8u432-b06",
+              "path": "/nix/store/1ml945jixdpxjxcrfqbkf4hj80kanaln-openjdk-17.0.13+11",
               "default": true
             },
             {
               "name": "debug",
-              "path": "/nix/store/n4nxa8m57q2gf25ddvk8hgykmy0g7dq4-openjdk-8u432-b06-debug"
-            },
-            {
-              "name": "jre",
-              "path": "/nix/store/hpvwh9lngvssnvgrviiqxkdbpy24hhwx-openjdk-8u432-b06-jre"
+              "path": "/nix/store/rwxm3xxn9gjzj0x15mlczy8yxs8prvfw-openjdk-17.0.13+11-debug"
             }
           ],
-          "store_path": "/nix/store/mb3yvj7mjkq3vypx87cr7cd20rqz4jw6-openjdk-8u432-b06"
+          "store_path": "/nix/store/1ml945jixdpxjxcrfqbkf4hj80kanaln-openjdk-17.0.13+11"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/favadxnr3av2bcbihnkqlb8yk2xychgz-openjdk-8u432-b06",
+              "path": "/nix/store/ngiryq0533pyjk7zdmfn7lf2jvb5s6cb-openjdk-17.0.13+11",
               "default": true
             },
             {
               "name": "debug",
-              "path": "/nix/store/x1q606agf1ipa4idx7mjzi3j3hj7qpan-openjdk-8u432-b06-debug"
-            },
-            {
-              "name": "jre",
-              "path": "/nix/store/nx69y53spijrawyfzh6g0nz2qjr0iy9j-openjdk-8u432-b06-jre"
+              "path": "/nix/store/i553561b60lhbbfpy79w78xf3c7j1cpf-openjdk-17.0.13+11-debug"
             }
           ],
-          "store_path": "/nix/store/favadxnr3av2bcbihnkqlb8yk2xychgz-openjdk-8u432-b06"
+          "store_path": "/nix/store/ngiryq0533pyjk7zdmfn7lf2jvb5s6cb-openjdk-17.0.13+11"
         }
       }
     },
