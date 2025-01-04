@@ -17,9 +17,11 @@ public class Player {
     }
 
     public void move(int moveSpaces)throws IllegalAccessException{
-        if(moveSpaces<0){
+//移動マス数が－又は最大値８より大きい場合
+        if(moveSpaces<0||moveSpaces>8){
             throw new IllegalAccessException("Move can't");
         }
+
 
         int newPosition=position+moveSpaces;
         //最大マス数を越した場合
@@ -27,5 +29,7 @@ public class Player {
         //    position=100;
         // }
         position=newPosition;
+        System.out.println(position);
+
     }
 }
