@@ -201,10 +201,37 @@ export default function Game() {
     });
   };
 
+  const handleInputChange = (value: string, index: number) => {
+    if (!/^[\u3040-\u309Fー]?$/.test(value)) return; // Allow only hiragana
+    const newWord = [...word];
+    newWord[index] = value;
+    setWord(newWord);
+
+    if (value && index < word.length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === "Backspace" && !word[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
   const checkWord = async () => {
     const fullWord = lastCharacter + word.join("");
+    if (fullWord.length !== rouletteResult) {
+      setResultMessage(`最後の文字を含めて${rouletteResult}文字を入力してください。`);
+      setTimeout(() => {
+        setResultMessage(null); // メッセージを消す
+      }, 1000);
+      return;
+    }
     if (!/^[\u3040-\u309Fー]+$/.test(fullWord)) {
       setResultMessage("ひらがなを入力してください！");
+      setTimeout(() => {
+        setResultMessage(null); // メッセージを消す
+      }, 1000);
       return;
     }
     if (fullWord.slice(-1) === "ん") {
@@ -316,6 +343,8 @@ export default function Game() {
                     <Progress value={(position / goal) * 100} className="w-full" />
                     <span className="text-sm font-medium mt-1">
                       {position}/{goal}
+                      <br />
+                      {players[index]?.username}
                     </span>
                   </div>
                 ))}
@@ -343,11 +372,13 @@ export default function Game() {
                       }}
                       type="text"
                       value={word[idx]}
-                      onChange={(e) => {
-                        const newWord = [...word];
-                        newWord[idx] = e.target.value;
-                        setWord(newWord);
-                      }}
+                      // onChange={(e) => {
+                      //   const newWord = [...word];
+                      //   newWord[idx] = e.target.value;
+                      //   setWord(newWord);
+                      // }}
+                      onChange={(e) => handleInputChange(e.target.value, idx)}
+                      onKeyDown={(e) => handleKeyDown(e, idx)}
                       maxLength={1}
                       className="w-12 h-12 text-center text-xl font-medium border-2 border-purple-300 focus:border-purple-500 rounded-lg"
                     />
