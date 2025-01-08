@@ -335,7 +335,7 @@ export default function Game() {
               <Gamepad2 className="w-8 h-8" />
               プレイヤー{currentPlayer + 1}の番
             </h2>
-            <Roulette onResult={handleRouletteResult} currentPlayer={currentPlayer + 1} isLarge={true} />
+            <Roulette onResult={handleRouletteResult} isLarge={true} isCurrentUserTurn={isCurrentUserTurn} currentPlayer={players[currentPlayerIndex]?.username} />
           </div>
         </div>
       )}

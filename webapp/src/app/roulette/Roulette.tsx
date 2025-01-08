@@ -4,11 +4,12 @@ import { motion } from "framer-motion";
 
 interface RouletteProps {
   onResult: (result: number) => void; // 結果を渡すコールバック関数
-  currentPlayer: number; // 現在のプレイヤー番号
+  currentPlayer: string; // 現在のプレイヤー番号
   isLarge: boolean; // ルーレットが大きく表示されるか
+  isCurrentUserTurn: boolean;
 }
 
-const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer, isLarge }) => {
+const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer, isLarge, isCurrentUserTurn }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
@@ -123,9 +124,13 @@ const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer, isLarge })
               プレイヤー {currentPlayer} の結果: {selectedNumber}
             </div>
           )}
-          <button onClick={handleStart} className="mt-6 px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300" disabled={isSpinning}>
-            {isSpinning ? "回転中..." : "スタート"}
-          </button>
+          {isCurrentUserTurn ? (
+            <button onClick={handleStart} className="mt-6 px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300" disabled={isSpinning}>
+              {isSpinning ? "回転中..." : "スタート"}
+            </button>
+          ) : (
+            <div className="mt-6 px-8 py-3 text-3xl  text-white rounded-md font-bold transition duration-300">{isSpinning ? "回転中..." : `${currentPlayer} の番`}</div>
+          )}
         </>
       )}
     </div>
