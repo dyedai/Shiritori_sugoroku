@@ -1,19 +1,23 @@
 package com.devbox.mavenapp.handler;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.CloseStatus;
 
+import com.devbox.mavenapp.model.GameMessage;
+import com.devbox.mavenapp.model.GameState;
+import com.devbox.mavenapp.model.Player;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.devbox.mavenapp.model.*;
-import org.jsoup.Jsoup;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class GameWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);

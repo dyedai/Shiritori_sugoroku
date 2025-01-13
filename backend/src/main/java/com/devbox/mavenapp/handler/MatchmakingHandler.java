@@ -16,7 +16,7 @@ public class MatchmakingHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> sessionToPlayer = new ConcurrentHashMap<>(); // sessionId -> {username, userid}
-    private static final int MAX_PLAYERS = 4;
+    private static final int MAX_PLAYERS = 2;
     private final List<Map<String, String>> players = Collections.synchronizedList(new ArrayList<>());
     private String roomId = UUID.randomUUID().toString(); // 固定のRoom IDを生成
 
