@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from "react";
 import Roulette from "../roulette/Roulette";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -392,35 +391,12 @@ export default function Game() {
                 <p className="text-lg font-medium text-gray-700 mb-4">
                   {rouletteResult}文字の単語を入力してください
                 </p>
-                {/* <div className="flex items-center justify-center gap-2 mb-6">
-                  <div className="w-12 h-12 border-2 border-purple-500 rounded-lg bg-purple-100 flex items-center justify-center text-xl font-bold text-purple-800">
-                    {lastCharacter}
-                  </div>
-                  {word.map((_, idx) => (
-                    <Input
-                      key={idx}
-                      ref={(el) => {
-                        inputRefs.current[idx] = el!;
-                      }}
-                      type="text"
-                      value={word[idx]}
-                      // onChange={(e) => {
-                      //   const newWord = [...word];
-                      //   newWord[idx] = e.target.value;
-                      //   setWord(newWord);
-                      // }}
-                      onChange={(e) => handleInputChange(e.target.value, idx)}
-                      onKeyDown={(e) => handleKeyDown(e, idx)}
-                      maxLength={1}
-                      className="w-12 h-12 text-center text-xl font-medium border-2 border-purple-300 focus:border-purple-500 rounded-lg"
-                    />
-                  ))}
-                </div> */}
                 <WordInput
                   lastCharacter={lastCharacter}
                   maxLength={rouletteResult}
                   value={word}
                   onChange={handleInputChange}
+                  onSubmit={() => submitButtonRef.current.click()}
                 />
                 <Button
                   onClick={checkWord}
