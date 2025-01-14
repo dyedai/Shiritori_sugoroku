@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Gamepad2, History } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import WordInput from "@/components/ui/word-input";
 
 const goal = 100;
 
@@ -35,6 +36,7 @@ export default function Game() {
   );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRefs = useRef<HTMLInputElement[]>([]);
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
   const [isRouletteSpinning, setIsRouletteSpinning] = useState(false);
 
   // WebSocket reference
@@ -63,7 +65,7 @@ export default function Game() {
 
   // Setup WebSocket and handle messages
   useEffect(() => {
-    // userId が取得されるまで待つ
+    // userId が取得されるまで接続しない
     if (!userId) return;
 
     const ws = new WebSocket(`ws://localhost:8080/game?roomId=${roomId}`);
@@ -218,21 +220,8 @@ export default function Game() {
     });
   };
 
-  const handleInputChange = (value: string, index: number) => {
-    if (!/^[\u3040-\u309Fー]?$/.test(value)) return; // Allow only hiragana
-    const newWord = [...word];
-    newWord[index] = value;
-    setWord(newWord);
-
-    if (value && index < word.length - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === "Backspace" && !word[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+  const handleInputChange = (value: string[]) => {
+    setWord(value);
   };
 
   const checkWord = async () => {
@@ -403,7 +392,7 @@ export default function Game() {
                 <p className="text-lg font-medium text-gray-700 mb-4">
                   {rouletteResult}文字の単語を入力してください
                 </p>
-                <div className="flex items-center justify-center gap-2 mb-6">
+                {/* <div className="flex items-center justify-center gap-2 mb-6">
                   <div className="w-12 h-12 border-2 border-purple-500 rounded-lg bg-purple-100 flex items-center justify-center text-xl font-bold text-purple-800">
                     {lastCharacter}
                   </div>
@@ -426,10 +415,19 @@ export default function Game() {
                       className="w-12 h-12 text-center text-xl font-medium border-2 border-purple-300 focus:border-purple-500 rounded-lg"
                     />
                   ))}
-                </div>
+                </div> */}
+                <WordInput
+                  lastCharacter={lastCharacter}
+                  maxLength={rouletteResult}
+                  value={word}
+                  onChange={handleInputChange}
+                />
                 <Button
                   onClick={checkWord}
                   className="w-full max-w-xs text-lg font-bold py-6"
+                  ref={(el) => {
+                    submitButtonRef.current = el;
+                  }}
                 >
                   確認する
                 </Button>
