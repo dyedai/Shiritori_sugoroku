@@ -129,13 +129,8 @@ const Roulette: React.FC<RouletteProps> = ({
         </div>
       </div>
 
-      {isLarge && (
+      {result == null && isAnimating && (
         <>
-          {result !== null && !isAnimating && (
-            <div className="mt-4 text-xl font-bold text-white">
-              プレイヤー {currentPlayer} の結果: {result}
-            </div>
-          )}
           {isCurrentUserTurn ? (
             <button
               onClick={onSpin}

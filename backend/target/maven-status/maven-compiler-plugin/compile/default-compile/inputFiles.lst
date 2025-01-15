@@ -1,8 +1,8 @@
-/home/daikikakimi/projects/school/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/config/WebSocketConfig.java
-/home/daikikakimi/projects/school/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/model/GameState.java
-/home/daikikakimi/projects/school/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/service/GameService.java
-/home/daikikakimi/projects/school/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/model/GameMessage.java
-/home/daikikakimi/projects/school/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/MavenAppApplication.java
-/home/daikikakimi/projects/school/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/handler/GameWebSocketHandler.java
-/home/daikikakimi/projects/school/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/model/Player.java
-/home/daikikakimi/projects/school/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/handler/MatchmakingHandler.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/model/GameMessage.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/service/GameService.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/MavenAppApplication.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/model/GameState.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/handler/MatchmakingHandler.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/handler/GameWebSocketHandler.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/model/Player.java
+/home/ts221/projects/Shiritori_sugoroku/backend/src/main/java/com/devbox/mavenapp/config/WebSocketConfig.java

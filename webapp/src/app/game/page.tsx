@@ -362,7 +362,7 @@ export default function Game() {
         setTimer(0);
         setIsSpinnable(false);
       }, 30000);
-    }, 5000);
+    }, 4000);
   };
 
   // Handle result
@@ -444,7 +444,9 @@ export default function Game() {
               </div>
               <div className="flex flex-col items-center justify-center gap-4">
                 <h3 className="text-xl font-bold text-purple-800 mb-2">
-                  プレイヤー{players[currentPlayerIndex]?.username}の番
+                  {isCurrentUserTurn
+                    ? "あなたの番です"
+                    : `プレイヤー${currentPlayer + 1}の番です`}
                 </h3>
                 <p className="text-lg font-medium text-gray-700 mb-4">
                   {rouletteResult}文字の単語を入力してください
