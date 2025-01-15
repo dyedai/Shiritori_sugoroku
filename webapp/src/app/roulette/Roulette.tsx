@@ -71,6 +71,11 @@ const Roulette: React.FC<RouletteProps> = ({
   }, []);
 
   useEffect(() => {
+    // 表示のちらつき抑制
+    setIsAnimating(true);
+  }, [result]);
+
+  useEffect(() => {
     if (isSpinning && result !== null) {
       const targetIndex = segments.indexOf(result);
       const anglePerSegment = 360 / segments.length;
@@ -79,7 +84,6 @@ const Roulette: React.FC<RouletteProps> = ({
       const spins = Math.floor(Math.random() * 3 + 5) * 360 + targetAngle;
 
       setRotation(spins);
-      setIsAnimating(true);
 
       setTimeout(() => {
         setIsAnimating(false);
