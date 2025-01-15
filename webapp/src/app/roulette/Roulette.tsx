@@ -3,106 +3,114 @@ import React, { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 interface RouletteProps {
-  onResult: (result: number) => void; // 結果を渡すコールバック関数
-  currentPlayer: string; // 現在のプレイヤー番号
-  isLarge: boolean; // ルーレットが大きく表示されるか
+  onSpin: () => void;
+  isSpinning: boolean;
+  result: number | null;
+  currentPlayer: string;
   isCurrentUserTurn: boolean;
+  isLarge: boolean;
 }
 
-const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer, isLarge, isCurrentUserTurn }) => {
+const Roulette: React.FC<RouletteProps> = ({
+  onSpin,
+  isSpinning,
+  result,
+  currentPlayer,
+  isCurrentUserTurn,
+  isLarge,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
-  const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-  const segments = [2, 3, 4, 5, 6, 7, 8]; // ルーレットの数字
-  const colors = ["#FF5733", "#FFC300", "#28B463", "#3498DB", "#8E44AD", "#F39C12", "#C0392B", "#1ABC9C"]; // 各セグメントの色
+  const segments = [2, 3, 4, 5, 6, 7, 8];
+  const colors = [
+    "#FF5733",
+    "#FFC300",
+    "#28B463",
+    "#3498DB",
+    "#8E44AD",
+    "#F39C12",
+    "#C0392B",
+    "#1ABC9C",
+  ];
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  // ルーレットホイールを描画する関数
   const drawRouletteWheel = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const radius = isLarge ? 200 : 80; // サイズを切り替え
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const anglePerSegment = (2 * Math.PI) / segments.length; // 各セグメントの角度
+    const radius = 200;
+    const anglePerSegment = (2 * Math.PI) / segments.length;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
-
-    // セグメントごとに描画
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     segments.forEach((number, index) => {
       const startAngle = index * anglePerSegment;
       const endAngle = startAngle + anglePerSegment;
+
       ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.moveTo(200, 200);
+      ctx.arc(200, 200, radius, startAngle, endAngle);
       ctx.closePath();
       ctx.fillStyle = colors[index];
       ctx.fill();
 
-      // 数字を描画
-      ctx.fillStyle = "#ffffff";
-      ctx.font = isLarge ? "bold 20px Arial" : "bold 10px Arial";
+      const textX =
+        200 + (radius / 1.5) * Math.cos(startAngle + anglePerSegment / 2);
+      const textY =
+        200 + (radius / 1.5) * Math.sin(startAngle + anglePerSegment / 2);
+      ctx.fillStyle = "#fff";
       ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      const textAngle = startAngle + anglePerSegment / 2;
-      const textX = centerX + (radius / 1.5) * Math.cos(textAngle);
-      const textY = centerY + (radius / 1.5) * Math.sin(textAngle);
+      ctx.font = "bold 20px Arial";
       ctx.fillText(number.toString(), textX, textY);
     });
   };
 
-  // スタートボタンが押されたときの処理
-  const handleStart = () => {
-    if (isSpinning) return; // 回転中は処理しない
-
-    setIsSpinning(true);
-    setSelectedNumber(null); // 選択された数字をリセット
-
-    const randomRotation = Math.floor(Math.random() * 360) + 1800; // 少なくとも5回転するように設定
-    const finalRotation = rotation + randomRotation;
-    setRotation(finalRotation);
-
-    setTimeout(() => {
-      setIsSpinning(false);
-      calculateSelectedNumber(finalRotation);
-    }, 3000); // 3秒後に停止
-  };
-
-  // 矢印が指す数字を計算する関数
-  const calculateSelectedNumber = (finalRotation: number) => {
-    const anglePerSegment = 360 / segments.length;
-    const normalizedRotation = ((finalRotation % 360) + 360) % 360; // 0〜360度に正規化
-
-    const offset = 270; // 矢印の位置を調整するオフセット
-    const arrowAngle = (360 - normalizedRotation + offset) % 360; // 矢印が指す角度を計算
-
-    // 矢印が指すセグメントのインデックスを計算
-    const selectedSegmentIndex = Math.floor(arrowAngle / anglePerSegment);
-    const selectedNumber = segments[selectedSegmentIndex];
-
-    setSelectedNumber(selectedNumber);
-    onResult(selectedNumber); // 結果を親コンポーネントに渡す
-  };
-
-  // コンポーネントがマウントまたは更新されるたびにルーレットホイールを描画
   useEffect(() => {
     drawRouletteWheel();
-  }, [rotation]);
+  }, []);
 
+  useEffect(() => {
+    if (isSpinning && result !== null) {
+      const targetIndex = segments.indexOf(result);
+      const anglePerSegment = 360 / segments.length;
+      const targetAngle =
+        360 - (targetIndex * anglePerSegment + anglePerSegment / 2) + 270;
+      const spins = Math.floor(Math.random() * 3 + 5) * 360 + targetAngle;
+
+      setRotation(spins);
+      setIsAnimating(true);
+
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 3000);
+    }
+  }, [isSpinning, result]);
   return (
-    <div className={`${isLarge ? "flex flex-col items-center justify-center fixed inset-0 bg-gray-800 bg-opacity-75 z-50" : "fixed bottom-4 right-4"}`}>
-      <div className={`relative ${isLarge ? "w-[430px] h-[430px]" : "w-[160px] h-[160px]"}`}>
+    <div
+      className={`${
+        isLarge
+          ? "flex flex-col items-center justify-center fixed inset-0 bg-gray-800 bg-opacity-75 z-50"
+          : "fixed bottom-4 right-4"
+      }`}
+    >
+      <div
+        className={`relative ${
+          isLarge ? "w-[430px] h-[430px]" : "w-[160px] h-[160px]"
+        }`}
+      >
         {/* ゴールドの枠 */}
-        <div className={`absolute inset-0 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-xl`}></div>
+        <div
+          className={`absolute inset-0 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-xl`}
+        ></div>
         {/* ルーレットホイール */}
         <motion.canvas
           ref={canvasRef}
           width={isLarge ? 400 : 160}
           height={isLarge ? 400 : 160}
-          className={`rounded-full absolute  ${isLarge ? "top-[16px] left-[16px]" : ""}`}
+          className={`rounded-full absolute  ${
+            isLarge ? "top-[16px] left-[16px]" : ""
+          }`}
           animate={{ rotate: rotation }}
           transition={{ duration: 3, ease: "easeOut" }}
         ></motion.canvas>
@@ -119,17 +127,23 @@ const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer, isLarge, i
 
       {isLarge && (
         <>
-          {selectedNumber !== null && (
+          {result !== null && !isAnimating && (
             <div className="mt-4 text-xl font-bold text-white">
-              プレイヤー {currentPlayer} の結果: {selectedNumber}
+              プレイヤー {currentPlayer} の結果: {result}
             </div>
           )}
           {isCurrentUserTurn ? (
-            <button onClick={handleStart} className="mt-6 px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300" disabled={isSpinning}>
+            <button
+              onClick={onSpin}
+              className="mt-6 px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300"
+              disabled={isSpinning}
+            >
               {isSpinning ? "回転中..." : "スタート"}
             </button>
           ) : (
-            <div className="mt-6 px-8 py-3 text-3xl  text-white rounded-md font-bold transition duration-300">{isSpinning ? "回転中..." : `${currentPlayer} の番`}</div>
+            <div className="mt-6 px-8 py-3 text-3xl  text-white rounded-md font-bold transition duration-300">
+              {isSpinning ? "回転中..." : `${currentPlayer} の番`}
+            </div>
           )}
         </>
       )}

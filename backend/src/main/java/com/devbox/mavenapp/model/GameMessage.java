@@ -9,6 +9,7 @@ public class GameMessage {
     private int winner;
     private int playerId; // プレイヤーID
     private String userName; // ユーザー名を追加
+    private int result; 
 
     // Getter と Setter
     public String getType() {
@@ -73,6 +74,14 @@ public class GameMessage {
 
     public void setOrder(int order) {
         this.order = order;
+    }
+
+     public int getResult() { 
+        return result;
+    }
+
+    public void setResult(int result) { 
+        this.result = result;
     }
 
 

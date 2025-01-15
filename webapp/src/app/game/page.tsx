@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Roulette from "../roulette/Roulette";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,11 +38,18 @@ export default function Game() {
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const [isRouletteSpinning, setIsRouletteSpinning] = useState(false);
   const [isSpinnable, setIsSpinnable] = useState(false);
+  const [isCurrentUserTurn, setIsCurrentUserTurn] = useState(false);
   const timeUpRef = useRef<NodeJS.Timeout>();
+  const [isRouletteVisible, setIsRouletteVisible] = useState(true);
 
   // WebSocket reference
   const socketRef = useRef<WebSocket | null>(null);
   console.log(players[currentPlayerIndex]?.username);
+
+  const getOrder = useMemo<number>(
+    () => players.findIndex((player) => player.userid === userId.toString()),
+    [players, userId]
+  );
 
   // Fetch authenticated user info
   useEffect(() => {
@@ -69,63 +76,65 @@ export default function Game() {
     // userId が取得されるまで接続しない
     if (!userId) return;
 
-    const ws = new WebSocket(`ws://localhost:8080/game?roomId=${roomId}`);
-    socketRef.current = ws;
+    if (!socketRef.current) {
+      const ws = new WebSocket(`ws://localhost:8080/game?roomId=${roomId}`);
+      socketRef.current = ws;
 
-    ws.onopen = () => {
-      console.log("WebSocket connected");
-      console.log("UID:", userId);
-      ws.send(
-        JSON.stringify({
-          type: "join",
-          userName,
-          order: players.findIndex(
-            (player) => player.userid === userId.toString()
-          ),
-        })
-      );
-    };
+      ws.onopen = () => {
+        console.log("WebSocket connected");
+        console.log("UID:", userId);
+        ws.send(
+          JSON.stringify({
+            type: "join",
+            userName,
+            order: getOrder,
+          })
+        );
+      };
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("WebSocket message:", data);
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("WebSocket message:", data);
 
-      switch (data.type) {
-        case "updateGameState":
-          updateGameState(data);
-          break;
-        case "rouletteResult":
-          setRouletteResult(data.result);
-          setPlayerPositions(data.playerPositions);
-          break;
-        case "checkResult":
-          handleCheckResult(data);
-          break;
-        case "resultMessage":
-          showResultMessage(data.body, 3000);
-          break;
-        case "startTurn":
-          setTimer(30);
-          setIsRouletteLarge(true);
-          setIsSpinnable(data.isCurrentUserTurn);
-          break;
-        default:
-          console.log("Unhandled WebSocket message:", data);
-      }
-    };
+        switch (data.type) {
+          case "updateGameState":
+            updateGameState(data);
+            break;
+          case "rouletteResult":
+            handleRouletteResult(data.result);
+            break;
+          case "checkResult":
+            handleCheckResult(data);
+            break;
+          case "resultMessage":
+            showResultMessage(data.body, 3000);
+            break;
+          case "startTurn":
+            setTimer(30);
+            setRouletteResult(null);
+            setIsRouletteLarge(true);
+            setIsRouletteVisible(true);
+            setIsSpinnable(data.isCurrentUserTurn);
+            setIsCurrentUserTurn(data.isCurrentUserTurn);
+            break;
+          default:
+            console.log("Unhandled WebSocket message:", data);
+        }
+      };
 
-    ws.onclose = () => {
-      console.log("WebSocket closed");
-    };
+      ws.onclose = () => {
+        console.log("WebSocket closed");
+      };
 
-    ws.onerror = (err) => {
-      console.error("WebSocket error:", err);
-    };
+      ws.onerror = (err) => {
+        console.error("WebSocket error:", err);
+      };
 
-    return () => {
-      ws.close();
-    };
-  }, [roomId, userId, userName]);
+      return () => {
+        socketRef.current.close();
+      };
+    }
+  }, [roomId, userId, userName, getOrder]);
 
   // Countdown timer logic
   // useEffect(() => {
@@ -274,41 +283,6 @@ export default function Game() {
     setWord([]);
     setIsSpinnable(false);
     clearTimeout(timeUpRef.current);
-
-    // try {
-    //   const response = await fetch(
-    //     `/api/check-word?word=${encodeURIComponent(fullWord)}`
-    //   );
-    //   const data = await response.json();
-
-    //   if (data.exists) {
-    //     setResultMessage("正解！");
-    //     setTimeout(() => {
-    //       setPlayerPositions((prevPositions) => {
-    //         const newPositions = [...prevPositions];
-    //         newPositions[currentPlayer] = Math.min(
-    //           newPositions[currentPlayer] + (rouletteResult || 0),
-    //           goal
-    //         );
-    //         return newPositions;
-    //       });
-    //       setHistory((prevHistory) => [...prevHistory, fullWord]);
-    //       setLastCharacter(fullWord.slice(-1)); // 最後の文字を次の単語の開始文字に設定
-    //       setResultMessage(null);
-    //       triggerNextTurn(); // 正解後、次のターンへ移行
-    //     }, 2000);
-    //   } else {
-    //     setResultMessage("失敗！この単語は存在しません。");
-    //     triggerNextTurn();
-    //   }
-    // } catch {
-    //   setResultMessage("エラーが発生しました。");
-    //   triggerNextTurn();
-    // } finally {
-    //   // setLoading(false);
-    //   setWord([]);
-    //   setRouletteResult(null);
-    // }
   };
 
   const handleCheckResult = (data: any) => {
@@ -323,6 +297,7 @@ export default function Game() {
     //   setLastCharacter((lastCharacter + word.join("")).slice(-1));
     // }
     // triggerNextTurn();
+    clearTimeout(timeUpRef.current);
     setTimer(0);
   };
 
@@ -334,32 +309,85 @@ export default function Game() {
     setLastCharacter(data.lastCharacter);
   };
 
-  const triggerNextTurn = () => {
-    // setTimeout(() => {
-    //   setResultMessage(null); // メッセージを消す
-    //   const nextPlayer = (currentPlayer + 1) % 4;
-    //   setCurrentPlayer(nextPlayer);
-    //   setIsRouletteLarge(true);
-    //   setTimer(30); // タイマーをリセット
-    // }, 2000); // 2秒後に次のターンに移行
+  // const triggerNextTurn = () => {
+  // setTimeout(() => {
+  //   setResultMessage(null); // メッセージを消す
+  //   const nextPlayer = (currentPlayer + 1) % 4;
+  //   setCurrentPlayer(nextPlayer);
+  //   setIsRouletteLarge(true);
+  //   setTimer(30); // タイマーをリセット
+  // }, 2000); // 2秒後に次のターンに移行
+  // };
+
+  // const handleRouletteResult = (result: number) => {
+  //   setRouletteResult(result);
+  //   setWord(Array(result - 1).fill(""));
+  //   setIsRouletteLarge(false);
+
+  //   timeUpRef.current = setTimeout(() => {
+  //     socketRef.current.send(
+  //       JSON.stringify({
+  //         type: "timeIsUp",
+  //       })
+  //     );
+  //     setTimer(0);
+  //     setIsSpinnable(false);
+  //   }, 30000);
+  // };
+  const triggerRouletteSpin = () => {
+    if (socketRef.current) {
+      socketRef.current.send(
+        JSON.stringify({
+          type: "startRoulette",
+        })
+      );
+    }
   };
 
   const handleRouletteResult = (result: number) => {
-    setRouletteResult(result);
     setWord(Array(result - 1).fill(""));
-    setIsRouletteLarge(false);
+    setRouletteResult(result);
 
-    timeUpRef.current = setTimeout(() => {
-      socketRef.current.send(
-        JSON.stringify({
-          type: "timeIsUp",
-        })
-      );
-      setTimer(0);
-      setIsSpinnable(false);
-    }, 30000);
+    setTimeout(() => {
+      setIsRouletteLarge(false);
+      setIsRouletteVisible(false);
+
+      timeUpRef.current = setTimeout(() => {
+        socketRef.current.send(
+          JSON.stringify({
+            type: "timeIsUp",
+            order: getOrder,
+          })
+        );
+        setTimer(0);
+        setIsSpinnable(false);
+      }, 30000);
+    }, 5000);
   };
 
+  // Handle result
+  // useEffect(() => {
+  //   if (rouletteResult !== null) {
+  //     setTimeout(() => {
+  //       const updatedPositions = [...playerPositions];
+  //       updatedPositions[currentPlayerIndex] = Math.min(
+  //         updatedPositions[currentPlayerIndex] + rouletteResult,
+  //         goal
+  //       );
+  //       setPlayerPositions(updatedPositions);
+
+  //       setTimeout(() => {
+  //         setResultMessage(null);
+  //         setIsRouletteVisible(false);
+  //         setTimeout(() => {
+  //           setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+  //           setRouletteResult(null);
+  //           setIsRouletteVisible(true);
+  //         }, 1000);
+  //       }, 2000);
+  //     }, 4000); // Wait 4 seconds for the spin to finish
+  //   }
+  // }, [rouletteResult]);
   // const isCurrentUserTurn = players[currentPlayerIndex]?.username === userName;
 
   return (
@@ -434,6 +462,7 @@ export default function Game() {
                   ref={(el) => {
                     submitButtonRef.current = el;
                   }}
+                  disabled={!isCurrentUserTurn}
                 >
                   確認する
                 </Button>
@@ -453,7 +482,7 @@ export default function Game() {
           </Card>
         </div>
       </div>
-      {isRouletteLarge && (
+      {isRouletteVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
           <div className="text-center bg-white rounded-xl p-8 shadow-2xl">
             <h2 className="text-3xl font-bold text-purple-800 mb-6 flex items-center justify-center gap-2">
@@ -461,10 +490,12 @@ export default function Game() {
               プレイヤー{currentPlayer + 1}の番
             </h2>
             <Roulette
-              onResult={handleRouletteResult}
-              isLarge={true}
-              isCurrentUserTurn={isSpinnable}
-              currentPlayer={players[currentPlayerIndex]?.username}
+              isLarge={isRouletteLarge}
+              onSpin={triggerRouletteSpin}
+              isSpinning={rouletteResult !== null}
+              result={rouletteResult}
+              currentPlayer={players[currentPlayerIndex]?.username || ""}
+              isCurrentUserTurn={isCurrentUserTurn}
             />
           </div>
         </div>

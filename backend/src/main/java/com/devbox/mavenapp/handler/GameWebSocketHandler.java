@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,12 +27,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);
     private static final int MAX_PLAYERS = 2;
     private static final int GOAL = 100;
+    
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final List<Player> players = new ArrayList<>();
     private final List<String> wordHistory = new ArrayList<>();
     private int currentPlayerIndex = 0;
+    private final Random random = new Random();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -46,6 +49,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             GameMessage gameMessage = objectMapper.readValue(message.getPayload(), GameMessage.class);
 
             switch (gameMessage.getType()) {
+                case "startRoulette":
+                    handleStartRoulette();
+                    break;
                 case "join":
                     handleJoin(session, gameMessage);
                     break;
@@ -65,6 +71,37 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+   private void handleStartRoulette() {
+        int result = random.nextInt(7) + 2; // ランダムなルーレット結果を生成（2〜8）
+        logger.info("Roulette started, result={}", result);
+
+        GameMessage response = new GameMessage();
+        response.setType("rouletteResult");
+        response.setResult(result);
+
+        broadcastMessage(response);
+    }
+
+    private void broadcastMessage(GameMessage message) {
+        String jsonMessage;
+        try {
+            jsonMessage = objectMapper.writeValueAsString(message);
+        } catch (IOException e) {
+            logger.error("Error serializing message for broadcast", e);
+            return;
+        }
+
+        synchronized(sessions) {
+            sessions.values().forEach(session -> {
+                try {
+                    session.sendMessage(new TextMessage(jsonMessage));
+                } catch (IOException e) {
+                    logger.error("Error sending message to sessionId={}", session.getId(), e);
+                }
+            });
+        }
+    }
+
     private void handleCheckWord(WebSocketSession session, GameMessage message) throws Exception {
     String word = message.getWord();
     int playerId = message.getPlayerId(); // playerId を取得
@@ -76,6 +113,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     response.setType("checkResult");
     response.setValid(isValid);
     response.setPlayerId(playerId); // 応答にも playerId を含める
+
+    broadcastMessage(response);
 
     if (isValid) {
         Player currentPlayer = players.get(playerId); // 正しいプレイヤーを更新
@@ -120,27 +159,31 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void handleTimeIsUp(WebSocketSession session, GameMessage message) throws Exception {
-        logger.debug("Time's up");
-        broadcastResultMessage("時間切れ！失敗！");
+        if (message.getOrder() == currentPlayerIndex) {
+            logger.debug("Time's up");
+            broadcastResultMessage("時間切れ！失敗！");
 
-        Thread.sleep(3000);
+            Thread.sleep(3000);
 
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); 
-        broadcastState();
-        Thread.sleep(1000);
-    
-        broadcastStartTurn();
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); 
+            broadcastState();
+            Thread.sleep(1000);
+        
+            broadcastStartTurn();
+        }
     }
 
     private void handleJoin(WebSocketSession session, GameMessage message) throws Exception {
         int playerId = players.size();
-        players.add(new Player(playerId, message.getOrder(), session.getId()));
-        logger.info("Player {} added. Total players: {}", playerId, players.size());
+        synchronized(players) {
+            players.add(new Player(playerId, message.getOrder(), session.getId()));
+            logger.info("Player {} added. Total players: {}", playerId, players.size());
 
-        broadcastState();
+            broadcastState();
 
-        if (players.size() == MAX_PLAYERS) {
-            broadcastStartTurn();
+            if (players.size() == MAX_PLAYERS) {
+                broadcastStartTurn();
+            }
         }
     }
 
@@ -190,10 +233,10 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             for (WebSocketSession session : sessions.values()) {
                 try {
                     message.put("isCurrentUserTurn", players.stream()
-                    .filter(player -> player.getOrder() == currentPlayerIndex)
-                    .findFirst()
-                    .get()
-                    .getSessionId() == session.getId());
+                        .filter(player -> player.getOrder() == currentPlayerIndex)
+                        .findFirst()
+                        .get()
+                        .getSessionId() == session.getId());
                     session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
                     logger.debug("Broadcast start turn sent to sessionId={}", session.getId());
                 } catch (Exception e) {
