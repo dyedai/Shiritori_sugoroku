@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,12 +27,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);
     private static final int MAX_PLAYERS = 2;
     private static final int GOAL = 100;
+    
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final List<Player> players = new ArrayList<>();
     private final List<String> wordHistory = new ArrayList<>();
     private int currentPlayerIndex = 0;
+    private final Random random = new Random();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -46,6 +49,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             GameMessage gameMessage = objectMapper.readValue(message.getPayload(), GameMessage.class);
 
             switch (gameMessage.getType()) {
+                case "startRoulette":
+                    handleStartRoulette();
+                    break;
                 case "join":
                     handleJoin(session, gameMessage);
                     break;
@@ -63,6 +69,35 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         } catch (Exception e) {
             logger.error("Error processing message: {}", message.getPayload(), e);
         }
+    }
+
+   private void handleStartRoulette() {
+        int result = random.nextInt(7) + 2; // ランダムなルーレット結果を生成（2〜8）
+        logger.info("Roulette started, result={}", result);
+
+        GameMessage response = new GameMessage();
+        response.setType("rouletteResult");
+        response.setResult(result);
+
+        broadcastMessage(response);
+    }
+
+    private void broadcastMessage(GameMessage message) {
+        String jsonMessage;
+        try {
+            jsonMessage = objectMapper.writeValueAsString(message);
+        } catch (IOException e) {
+            logger.error("Error serializing message for broadcast", e);
+            return;
+        }
+
+        sessions.values().forEach(session -> {
+            try {
+                session.sendMessage(new TextMessage(jsonMessage));
+            } catch (IOException e) {
+                logger.error("Error sending message to sessionId={}", session.getId(), e);
+            }
+        });
     }
 
     private void handleCheckWord(WebSocketSession session, GameMessage message) throws Exception {

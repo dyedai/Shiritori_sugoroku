@@ -39,6 +39,7 @@ export default function Game() {
   const [isRouletteSpinning, setIsRouletteSpinning] = useState(false);
   const [isSpinnable, setIsSpinnable] = useState(false);
   const timeUpRef = useRef<NodeJS.Timeout>();
+  const [isRouletteVisible, setIsRouletteVisible] = useState(true);
 
   // WebSocket reference
   const socketRef = useRef<WebSocket | null>(null);
@@ -91,6 +92,8 @@ export default function Game() {
       console.log("WebSocket message:", data);
 
       switch (data.type) {
+        case "rouletteResult":
+          setRouletteResult(data.result);
         case "updateGameState":
           updateGameState(data);
           break;
@@ -344,10 +347,32 @@ export default function Game() {
     // }, 2000); // 2秒後に次のターンに移行
   };
 
-  const handleRouletteResult = (result: number) => {
-    setRouletteResult(result);
-    setWord(Array(result - 1).fill(""));
+  // const handleRouletteResult = (result: number) => {
+  //   setRouletteResult(result);
+  //   setWord(Array(result - 1).fill(""));
+  //   setIsRouletteLarge(false);
+
+  //   timeUpRef.current = setTimeout(() => {
+  //     socketRef.current.send(
+  //       JSON.stringify({
+  //         type: "timeIsUp",
+  //       })
+  //     );
+  //     setTimer(0);
+  //     setIsSpinnable(false);
+  //   }, 30000);
+  // };
+  const triggerRouletteSpin = () => {
+    if (socketRef.current) {
+      socketRef.current.send(
+        JSON.stringify({
+          type: "startRoulette",
+        })
+      );
+    }
+    setWord(Array(rouletteResult - 1).fill(""));
     setIsRouletteLarge(false);
+    setIsRouletteVisible(false);
 
     timeUpRef.current = setTimeout(() => {
       socketRef.current.send(
@@ -360,6 +385,29 @@ export default function Game() {
     }, 30000);
   };
 
+  // Handle result
+  // useEffect(() => {
+  //   if (rouletteResult !== null) {
+  //     setTimeout(() => {
+  //       const updatedPositions = [...playerPositions];
+  //       updatedPositions[currentPlayerIndex] = Math.min(
+  //         updatedPositions[currentPlayerIndex] + rouletteResult,
+  //         goal
+  //       );
+  //       setPlayerPositions(updatedPositions);
+
+  //       setTimeout(() => {
+  //         setResultMessage(null);
+  //         setIsRouletteVisible(false);
+  //         setTimeout(() => {
+  //           setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+  //           setRouletteResult(null);
+  //           setIsRouletteVisible(true);
+  //         }, 1000);
+  //       }, 2000);
+  //     }, 4000); // Wait 4 seconds for the spin to finish
+  //   }
+  // }, [rouletteResult]);
   // const isCurrentUserTurn = players[currentPlayerIndex]?.username === userName;
 
   return (
@@ -460,12 +508,18 @@ export default function Game() {
               <Gamepad2 className="w-8 h-8" />
               プレイヤー{currentPlayer + 1}の番
             </h2>
-            <Roulette
-              onResult={handleRouletteResult}
-              isLarge={true}
-              isCurrentUserTurn={isSpinnable}
-              currentPlayer={players[currentPlayerIndex]?.username}
-            />
+            {isRouletteVisible && (
+              <Roulette
+                isLarge={isRouletteLarge}
+                onSpin={triggerRouletteSpin}
+                isSpinning={rouletteResult !== null}
+                result={rouletteResult}
+                currentPlayer={players[currentPlayerIndex]?.username || ""}
+                isCurrentUserTurn={
+                  players[currentPlayerIndex]?.username === userName
+                }
+              />
+            )}
           </div>
         </div>
       )}
