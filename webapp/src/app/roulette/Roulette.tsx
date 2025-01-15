@@ -7,15 +7,31 @@ interface RouletteProps {
   currentPlayer: string; // 現在のプレイヤー番号
   isLarge: boolean; // ルーレットが大きく表示されるか
   isCurrentUserTurn: boolean;
+  targetNumber: number; // 指定された数字
 }
 
-const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer, isLarge, isCurrentUserTurn }) => {
+const Roulette: React.FC<RouletteProps> = ({
+  onResult,
+  currentPlayer,
+  isLarge,
+  isCurrentUserTurn,
+  targetNumber,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const segments = [2, 3, 4, 5, 6, 7, 8]; // ルーレットの数字
-  const colors = ["#FF5733", "#FFC300", "#28B463", "#3498DB", "#8E44AD", "#F39C12", "#C0392B", "#1ABC9C"]; // 各セグメントの色
+  const colors = [
+    "#FF5733",
+    "#FFC300",
+    "#28B463",
+    "#3498DB",
+    "#8E44AD",
+    "#F39C12",
+    "#C0392B",
+    "#1ABC9C",
+  ]; // 各セグメントの色
 
   // ルーレットホイールを描画する関数
   const drawRouletteWheel = () => {
@@ -61,30 +77,28 @@ const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer, isLarge, i
     setIsSpinning(true);
     setSelectedNumber(null); // 選択された数字をリセット
 
-    const randomRotation = Math.floor(Math.random() * 360) + 1800; // 少なくとも5回転するように設定
-    const finalRotation = rotation + randomRotation;
+    const targetIndex = segments.indexOf(targetNumber);
+    if (targetIndex === -1) {
+      console.error("指定された数字がルーレットに存在しません");
+      setIsSpinning(false);
+      return;
+    }
+
+    const anglePerSegment = 360 / segments.length;
+    const offset = 270; // 矢印の位置を調整するオフセット
+    const targetAngle =
+      360 - (targetIndex * anglePerSegment + anglePerSegment / 2 - offset); // 指定された数字の角度を計算
+
+    const randomFullRotations = Math.floor(Math.random() * 3) + 5; // 5〜7回転
+    const finalRotation = randomFullRotations * 360 + targetAngle; // 指定角度で停止
+
     setRotation(finalRotation);
 
     setTimeout(() => {
       setIsSpinning(false);
-      calculateSelectedNumber(finalRotation);
+      setSelectedNumber(targetNumber);
+      onResult(targetNumber); // 結果を親コンポーネントに渡す
     }, 3000); // 3秒後に停止
-  };
-
-  // 矢印が指す数字を計算する関数
-  const calculateSelectedNumber = (finalRotation: number) => {
-    const anglePerSegment = 360 / segments.length;
-    const normalizedRotation = ((finalRotation % 360) + 360) % 360; // 0〜360度に正規化
-
-    const offset = 270; // 矢印の位置を調整するオフセット
-    const arrowAngle = (360 - normalizedRotation + offset) % 360; // 矢印が指す角度を計算
-
-    // 矢印が指すセグメントのインデックスを計算
-    const selectedSegmentIndex = Math.floor(arrowAngle / anglePerSegment);
-    const selectedNumber = segments[selectedSegmentIndex];
-
-    setSelectedNumber(selectedNumber);
-    onResult(selectedNumber); // 結果を親コンポーネントに渡す
   };
 
   // コンポーネントがマウントまたは更新されるたびにルーレットホイールを描画
@@ -93,16 +107,30 @@ const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer, isLarge, i
   }, [rotation]);
 
   return (
-    <div className={`${isLarge ? "flex flex-col items-center justify-center fixed inset-0 bg-gray-800 bg-opacity-75 z-50" : "fixed bottom-4 right-4"}`}>
-      <div className={`relative ${isLarge ? "w-[430px] h-[430px]" : "w-[160px] h-[160px]"}`}>
+    <div
+      className={`${
+        isLarge
+          ? "flex flex-col items-center justify-center fixed inset-0 bg-gray-800 bg-opacity-75 z-50"
+          : "fixed bottom-4 right-4"
+      }`}
+    >
+      <div
+        className={`relative ${
+          isLarge ? "w-[430px] h-[430px]" : "w-[160px] h-[160px]"
+        }`}
+      >
         {/* ゴールドの枠 */}
-        <div className={`absolute inset-0 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-xl`}></div>
+        <div
+          className={`absolute inset-0 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-xl`}
+        ></div>
         {/* ルーレットホイール */}
         <motion.canvas
           ref={canvasRef}
           width={isLarge ? 400 : 160}
           height={isLarge ? 400 : 160}
-          className={`rounded-full absolute  ${isLarge ? "top-[16px] left-[16px]" : ""}`}
+          className={`rounded-full absolute  ${
+            isLarge ? "top-[16px] left-[16px]" : ""
+          }`}
           animate={{ rotate: rotation }}
           transition={{ duration: 3, ease: "easeOut" }}
         ></motion.canvas>
@@ -125,11 +153,17 @@ const Roulette: React.FC<RouletteProps> = ({ onResult, currentPlayer, isLarge, i
             </div>
           )}
           {isCurrentUserTurn ? (
-            <button onClick={handleStart} className="mt-6 px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300" disabled={isSpinning}>
+            <button
+              onClick={handleStart}
+              className="mt-6 px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition duration-300"
+              disabled={isSpinning}
+            >
               {isSpinning ? "回転中..." : "スタート"}
             </button>
           ) : (
-            <div className="mt-6 px-8 py-3 text-3xl  text-white rounded-md font-bold transition duration-300">{isSpinning ? "回転中..." : `${currentPlayer} の番`}</div>
+            <div className="mt-6 px-8 py-3 text-3xl text-white rounded-md font-bold transition duration-300">
+              {isSpinning ? "回転中..." : `${currentPlayer} の番`}
+            </div>
           )}
         </>
       )}
