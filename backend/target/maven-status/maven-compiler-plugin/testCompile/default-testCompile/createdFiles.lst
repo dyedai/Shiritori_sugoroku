@@ -1,1 +1,3 @@
 com/devbox/mavenapp/AppTest.class
+com/devbox/mavenapp/handler/GameWebSocketHandlerTest.class
+com/devbox/mavenapp/handler/MatchmakingHandlerTest.class

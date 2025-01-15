@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.devbox.mavenapp.AppTest" time="0.002" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.devbox.mavenapp.handler.GameWebSocketHandlerTest" time="0.869" tests="5" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -54,5 +54,131 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="65.0"/>
   </properties>
-  <testcase name="testApp" classname="com.devbox.mavenapp.AppTest" time="0.001"/>
+  <testcase name="testAfterConnectionClosed" classname="com.devbox.mavenapp.handler.GameWebSocketHandlerTest" time="0.044">
+    <system-out><![CDATA[12:46:59.217 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - New connection established: sessionId=session1
+12:46:59.218 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Player 0 added. Total players: 1
+12:46:59.257 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Broadcast state sent to sessionId=session1
+12:46:59.257 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - Connection closed: sessionId=session1, status=null
+]]></system-out>
+  </testcase>
+  <testcase name="testBroadcastState" classname="com.devbox.mavenapp.handler.GameWebSocketHandlerTest" time="0.018">
+    <system-out><![CDATA[12:46:59.262 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - New connection established: sessionId=session1
+12:46:59.263 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Player 0 added. Total players: 1
+12:46:59.268 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Broadcast state sent to sessionId=session1
+12:46:59.268 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - New connection established: sessionId=session2
+12:46:59.268 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Player 1 added. Total players: 2
+12:46:59.269 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Broadcast state sent to sessionId=session2
+12:46:59.269 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Broadcast state sent to sessionId=session1
+]]></system-out>
+  </testcase>
+  <testcase name="testHandleTextMessage_CheckWord_Valid" classname="com.devbox.mavenapp.handler.GameWebSocketHandlerTest" time="0.684">
+    <system-out><![CDATA[12:46:59.281 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - New connection established: sessionId=session1
+12:46:59.281 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Player 0 added. Total players: 1
+12:46:59.282 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Broadcast state sent to sessionId=session1
+12:46:59.285 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - Message received: sessionId=session1, payload={"type":"checkWord","word":"example","valid":false,"gameOver":false,"winner":0,"playerId":0,"userName":null}
+12:46:59.306 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Handling 'checkWord' message: com.devbox.mavenapp.model.GameMessage@552ed807
+12:46:59.306 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - Player 0 validating word: example
+12:46:59.959 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Weblio validation result for 'example': true
+12:46:59.959 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - Player 0 position updated to 7
+12:46:59.960 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Broadcast state sent to sessionId=session1
+12:46:59.962 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Response sent to sessionId=session1: com.devbox.mavenapp.model.GameMessage@57f9b467
+]]></system-out>
+  </testcase>
+  <testcase name="testHandleTextMessage_CheckWord_Invalid" classname="com.devbox.mavenapp.handler.GameWebSocketHandlerTest" time="0.112">
+    <system-out><![CDATA[12:46:59.966 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - New connection established: sessionId=session1
+12:46:59.966 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Player 0 added. Total players: 1
+12:46:59.968 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Broadcast state sent to sessionId=session1
+12:46:59.969 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - Message received: sessionId=session1, payload={"type":"checkWord","word":"invalidword123","valid":false,"gameOver":false,"winner":0,"playerId":0,"userName":null}
+12:46:59.970 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Handling 'checkWord' message: com.devbox.mavenapp.model.GameMessage@f6de586
+12:46:59.970 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - Player 0 validating word: invalidword123
+12:47:00.073 [main] ERROR com.devbox.mavenapp.handler.GameWebSocketHandler - Error connecting to Weblio for word 'invalidword123'
+org.jsoup.HttpStatusException: HTTP error fetching URL. Status=404, URL=[https://www.weblio.jp/content/invalidword123]
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:889)
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:828)
+	at org.jsoup.helper.HttpConnection.execute(HttpConnection.java:365)
+	at org.jsoup.helper.HttpConnection.get(HttpConnection.java:352)
+	at com.devbox.mavenapp.handler.GameWebSocketHandler.validateWordWithWeblio(GameWebSocketHandler.java:92)
+	at com.devbox.mavenapp.handler.GameWebSocketHandler.handleCheckWord(GameWebSocketHandler.java:62)
+	at com.devbox.mavenapp.handler.GameWebSocketHandler.handleTextMessage(GameWebSocketHandler.java:47)
+	at com.devbox.mavenapp.handler.GameWebSocketHandlerTest.testHandleTextMessage_CheckWord_Invalid(GameWebSocketHandlerTest.java:93)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+12:47:00.074 [main] WARN com.devbox.mavenapp.handler.GameWebSocketHandler - Word validation failed: invalidword123
+12:47:00.074 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Broadcast state sent to sessionId=session1
+12:47:00.075 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Response sent to sessionId=session1: com.devbox.mavenapp.model.GameMessage@30ca0779
+]]></system-out>
+  </testcase>
+  <testcase name="testAfterConnectionEstablished" classname="com.devbox.mavenapp.handler.GameWebSocketHandlerTest" time="0.004">
+    <system-out><![CDATA[12:47:00.079 [main] INFO com.devbox.mavenapp.handler.GameWebSocketHandler - New connection established: sessionId=session1
+12:47:00.080 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Player 0 added. Total players: 1
+12:47:00.081 [main] DEBUG com.devbox.mavenapp.handler.GameWebSocketHandler - Broadcast state sent to sessionId=session1
+]]></system-out>
+  </testcase>
 </testsuite>

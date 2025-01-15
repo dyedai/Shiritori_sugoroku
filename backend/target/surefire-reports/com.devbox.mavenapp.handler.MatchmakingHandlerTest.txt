@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.devbox.mavenapp.handler.MatchmakingHandlerTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.124 s -- in com.devbox.mavenapp.handler.MatchmakingHandlerTest
