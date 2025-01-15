@@ -83,6 +83,4 @@ public class GameMessage {
     public void setResult(int result) { 
         this.result = result;
     }
-
-
 }

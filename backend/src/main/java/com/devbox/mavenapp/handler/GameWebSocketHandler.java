@@ -60,6 +60,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                     case "timeIsUp":
                         handleTimeIsUp(session, gameMessage);
                         break;
+                    case "inputWord":
+                        handleInputWord(session, gameMessage);
+                        break;
                     default:
                         logger.warn("Unknown message type received: {}", gameMessage.getType());
                 }
@@ -152,6 +155,24 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
             broadcastState();
             broadcastStartTurn();
+        }
+    }
+
+    private void handleInputWord(WebSocketSession session, GameMessage message) throws Exception {
+        synchronized(sessions) {
+            GameMessage gm = new GameMessage();
+            gm.setType("overwriteWord");
+            gm.setWord(message.getWord());
+
+            sessions.values().forEach(s -> {
+                if (s.getId() != session.getId()) {
+                    try {
+                        s.sendMessage(new TextMessage(objectMapper.writeValueAsString(gm)));
+                    } catch (IOException e) {
+                        logger.error("Error sending message to sessionId={}", session.getId(), e);
+                    }   
+                }
+            });
         }
     }
 

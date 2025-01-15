@@ -18,6 +18,7 @@ export type WordInputProps = {
   value?: string[];
   onChange?: (value: string[]) => void;
   onSubmit?: () => void;
+  disabled?: boolean;
 };
 
 type CharacterProps = {
@@ -28,6 +29,7 @@ type CharacterProps = {
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: KeyboardEventHandler;
   inputRef?: Ref<HTMLInputElement>;
+  disabled?: boolean;
 };
 
 const fullJapanesePattern =
@@ -35,7 +37,8 @@ const fullJapanesePattern =
 const hiraganaPattern = /^[\u3041-\u3096\u30fc]+$/;
 
 const WordInput = (props: WordInputProps) => {
-  const { maxLength, lastCharacter, value, onChange, onSubmit } = props;
+  const { maxLength, lastCharacter, value, onChange, onSubmit, disabled } =
+    props;
   const [pos, setPos] = useState<number | undefined>(undefined);
   const inputRefs = useRef<HTMLInputElement[]>([]);
 
@@ -124,6 +127,7 @@ const WordInput = (props: WordInputProps) => {
               inputRef={(el) => {
                 inputRefs.current[index] = el;
               }}
+              disabled={disabled}
             />
           );
         })}
@@ -133,8 +137,16 @@ const WordInput = (props: WordInputProps) => {
 };
 
 const Character = (props: CharacterProps) => {
-  const { character, locked, current, onClick, onChange, onKeyDown, inputRef } =
-    props;
+  const {
+    character,
+    locked,
+    current,
+    onClick,
+    onChange,
+    onKeyDown,
+    inputRef,
+    disabled,
+  } = props;
 
   return (
     <div className="w-12 h-12 relative rounded-lg">
@@ -162,6 +174,7 @@ const Character = (props: CharacterProps) => {
           onChange={onChange}
           onKeyDown={onKeyDown}
           ref={inputRef}
+          disabled={disabled}
         />
       )}
     </div>

@@ -117,6 +117,9 @@ export default function Game() {
             setIsSpinnable(data.isCurrentUserTurn);
             setIsCurrentUserTurn(data.isCurrentUserTurn);
             break;
+          case "overwriteWord":
+            handleOverwriteWord(data.word);
+            break;
           default:
             console.log("Unhandled WebSocket message:", data);
         }
@@ -212,7 +215,7 @@ export default function Game() {
     const height = canvas.height;
     const numPlayers = 4;
 
-    ctx.fillStyle = "#f3f4f6";
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
     ctx.font = "14px 'Noto Sans JP', sans-serif";
@@ -220,7 +223,7 @@ export default function Game() {
     for (let i = 0; i <= goal; i++) {
       const xPos = 50 * i + 50;
       for (let j = 0; j < numPlayers; j++) {
-        ctx.fillStyle = "#d1d5db";
+        ctx.fillStyle = "#aaaaaa";
         ctx.fillRect(xPos, (j + 1) * 60, 32, 8);
         if (i === 0) ctx.fillText("START", xPos, (j + 1) * 60 + 25);
         else if (i === goal) ctx.fillText("GOAL", xPos, (j + 1) * 60 + 25);
@@ -245,6 +248,16 @@ export default function Game() {
 
   const handleInputChange = (value: string[]) => {
     setWord(value);
+    socketRef.current.send(
+      JSON.stringify({
+        type: "inputWord",
+        word: value
+          .map((c) => (c === "" ? " " : c))
+          .join("")
+          .trimEnd(),
+        playerId: userId,
+      })
+    );
   };
 
   const showResultMessage = (message: string, duration?: number) => {
@@ -390,6 +403,10 @@ export default function Game() {
   // }, [rouletteResult]);
   // const isCurrentUserTurn = players[currentPlayerIndex]?.username === userName;
 
+  const handleOverwriteWord = (wordStr: string) => {
+    setWord(Array.from(wordStr).map((c) => (c === " " ? "" : c)));
+  };
+
   return (
     <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 flex flex-col gap-6 p-6">
       <div className="flex flex-col w-fit gap-4">
@@ -457,6 +474,7 @@ export default function Game() {
                   value={word}
                   onChange={handleInputChange}
                   onSubmit={() => submitButtonRef.current.click()}
+                  disabled={!isCurrentUserTurn}
                 />
                 <Button
                   onClick={checkWord}
