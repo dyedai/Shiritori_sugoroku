@@ -6,8 +6,9 @@ public class GameMessage {
     private boolean valid;
     private boolean gameOver;
     private int winner;
-    private int playerId; // プレイヤーID
-    private String userName; // ユーザー名を追加
+    private int playerId;
+    private String userName;
+    private int result; // ルーレットの結果用フィールドを追加
 
     // Getter と Setter
     public String getType() {
@@ -58,11 +59,19 @@ public class GameMessage {
         this.playerId = playerId;
     }
 
-    public String getUserName() { // 新たに追加された Getter
+    public String getUserName() {
         return userName;
     }
 
-    public void setUserName(String userName) { // 新たに追加された Setter
+    public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public int getResult() { // 新しく追加
+        return result;
+    }
+
+    public void setResult(int result) { // 新しく追加
+        this.result = result;
     }
 }
