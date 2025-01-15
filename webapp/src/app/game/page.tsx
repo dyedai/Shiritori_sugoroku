@@ -186,7 +186,7 @@ export default function Game() {
           clearInterval(countdown);
           return 0;
         }
-        return prev - 1;
+        return Math.max(prev - 1, 0);
       });
     }, 1000);
 
