@@ -24,4 +24,13 @@ public class GameState {
     public List<String> getWordHistory() {
         return wordHistory;
     }
+
+    public char getLastCharacter() {
+        if (wordHistory.isEmpty()) {
+            return 'り';
+        } else {
+            var lastWord = wordHistory.get(wordHistory.size() - 1);
+            return lastWord.charAt(lastWord.length() - 1);
+        }
+    }
 }

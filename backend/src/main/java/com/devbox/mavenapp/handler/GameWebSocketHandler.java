@@ -2,8 +2,11 @@ package com.devbox.mavenapp.handler;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jsoup.Jsoup;
@@ -21,22 +24,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GameWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);
+    private static final int MAX_PLAYERS = 2;
+    private static final int GOAL = 100;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final List<Player> players = new ArrayList<>();
     private final List<String> wordHistory = new ArrayList<>();
     private int currentPlayerIndex = 0;
-    private static final int GOAL = 100;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         logger.info("New connection established: sessionId={}", session.getId());
         sessions.put(session.getId(), session);
-        int playerId = players.size();
-        players.add(new Player(playerId));
-        logger.debug("Player {} added. Total players: {}", playerId, players.size());
-        broadcastState();
     }
 
     @Override
@@ -46,9 +46,16 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             GameMessage gameMessage = objectMapper.readValue(message.getPayload(), GameMessage.class);
 
             switch (gameMessage.getType()) {
+                case "join":
+                    handleJoin(session, gameMessage);
+                    break;
                 case "checkWord":
                     logger.debug("Handling 'checkWord' message: {}", gameMessage);
                     handleCheckWord(session, gameMessage);
+                    break;
+                case "timeIsUp":
+                    logger.debug("Handling 'timeIsUp' message: {}", gameMessage);
+                    handleTimeIsUp(session, gameMessage);
                     break;
                 default:
                     logger.warn("Unknown message type received: {}", gameMessage.getType());
@@ -76,6 +83,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         wordHistory.add(word);
         logger.info("Player {} position updated to {}", playerId, currentPlayer.getPosition());
 
+        broadcastResultMessage("「%s」\n正解！".formatted(word));
+
         if (currentPlayer.getPosition() >= GOAL) {
             response.setGameOver(true);
             response.setWinner(playerId);
@@ -83,11 +92,18 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         }
     } else {
         logger.warn("Word validation failed: {}", word);
+        broadcastResultMessage("「%s」\n失敗！".formatted(word));
     }
 
+    Thread.sleep(3000);
+
+    currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); 
     broadcastState();
-    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(response)));
-    logger.debug("Response sent to sessionId={}: {}", session.getId(), response);
+    Thread.sleep(1000);
+
+    broadcastStartTurn();
+    // session.sendMessage(new TextMessage(objectMapper.writeValueAsString(response)));
+    // logger.debug("Response sent to sessionId={}: {}", session.getId(), response);
 }
 
     private boolean validateWordWithWeblio(String word) {
@@ -103,16 +119,88 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+    private void handleTimeIsUp(WebSocketSession session, GameMessage message) throws Exception {
+        logger.debug("Time's up");
+        broadcastResultMessage("時間切れ！失敗！");
+
+        Thread.sleep(3000);
+
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); 
+        broadcastState();
+        Thread.sleep(1000);
+    
+        broadcastStartTurn();
+    }
+
+    private void handleJoin(WebSocketSession session, GameMessage message) throws Exception {
+        int playerId = players.size();
+        players.add(new Player(playerId, message.getOrder(), session.getId()));
+        logger.info("Player {} added. Total players: {}", playerId, players.size());
+
+        broadcastState();
+
+        if (players.size() == MAX_PLAYERS) {
+            broadcastStartTurn();
+        }
+    }
+
     private void broadcastState() {
         GameState state = new GameState(players, currentPlayerIndex, wordHistory);
-        sessions.values().forEach(session -> {
-            try {
-                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(state)));
-                logger.debug("Broadcast state sent to sessionId={}", session.getId());
-            } catch (Exception e) {
-                logger.error("Error broadcasting state to sessionId={}", session.getId(), e);
+        Map<String, Object> message = new HashMap<>();
+        message.put("type", "updateGameState");
+        message.put("players", state.getPlayers());
+        message.put("currentPlayerIndex", state.getCurrentPlayerIndex());
+        message.put("wordHistory", state.getWordHistory());
+        message.put("lastCharacter", state.getLastCharacter());
+
+        synchronized(sessions) {
+            sessions.values().forEach(session -> {
+                try {
+                    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+                    logger.debug("Broadcast state sent to sessionId={}", session.getId());
+                } catch (Exception e) {
+                    logger.error("Error broadcasting state to sessionId={}", session.getId(), e);
+                }
+            });
+        }
+    }
+
+    private void broadcastResultMessage(String body) {
+        Map<String, Object> message = new HashMap<>();
+        message.put("type", "resultMessage");
+        message.put("body", body);
+
+        synchronized(sessions) {
+            sessions.values().forEach(session -> {
+                try {
+                    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+                    logger.debug("Broadcast result message sent to sessionId={}", session.getId());
+                } catch (Exception e) {
+                    logger.error("Error broadcasting result message to sessionId={}", session.getId(), e);
+                }
+            });
+        }
+    }
+
+    private void broadcastStartTurn() {
+        Map<String, Object> message = new HashMap<>();
+        message.put("type", "startTurn");
+
+        synchronized(sessions) {
+            for (WebSocketSession session : sessions.values()) {
+                try {
+                    message.put("isCurrentUserTurn", players.stream()
+                    .filter(player -> player.getOrder() == currentPlayerIndex)
+                    .findFirst()
+                    .get()
+                    .getSessionId() == session.getId());
+                    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+                    logger.debug("Broadcast start turn sent to sessionId={}", session.getId());
+                } catch (Exception e) {
+                    logger.error("Error broadcasting result message to sessionId={}", session.getId(), e);
+                }
             }
-        });
+        }
     }
 
     @Override

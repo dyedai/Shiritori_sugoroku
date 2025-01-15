@@ -37,6 +37,8 @@ export default function Game() {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const [isRouletteSpinning, setIsRouletteSpinning] = useState(false);
+  const [isSpinnable, setIsSpinnable] = useState(false);
+  const timeUpRef = useRef<NodeJS.Timeout>();
 
   // WebSocket reference
   const socketRef = useRef<WebSocket | null>(null);
@@ -72,7 +74,16 @@ export default function Game() {
 
     ws.onopen = () => {
       console.log("WebSocket connected");
-      ws.send(JSON.stringify({ type: "join", userName }));
+      console.log("UID:", userId);
+      ws.send(
+        JSON.stringify({
+          type: "join",
+          userName,
+          order: players.findIndex(
+            (player) => player.userid === userId.toString()
+          ),
+        })
+      );
     };
 
     ws.onmessage = (event) => {
@@ -82,8 +93,6 @@ export default function Game() {
       switch (data.type) {
         case "updateGameState":
           updateGameState(data);
-          setPlayerPositions(data.playerPositions);
-          setCurrentPlayerIndex(data.currentPlayerIndex);
           break;
         case "rouletteResult":
           setRouletteResult(data.result);
@@ -91,6 +100,14 @@ export default function Game() {
           break;
         case "checkResult":
           handleCheckResult(data);
+          break;
+        case "resultMessage":
+          showResultMessage(data.body, 3000);
+          break;
+        case "startTurn":
+          setTimer(30);
+          setIsRouletteLarge(true);
+          setIsSpinnable(data.isCurrentUserTurn);
           break;
         default:
           console.log("Unhandled WebSocket message:", data);
@@ -111,20 +128,20 @@ export default function Game() {
   }, [roomId, userId, userName]);
 
   // Countdown timer logic
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev === 1) {
-          clearInterval(timer);
-          triggerNextTurn();
-          return 30;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setCountdown((prev) => {
+  //       if (prev === 1) {
+  //         clearInterval(timer);
+  //         triggerNextTurn();
+  //         return 30;
+  //       }
+  //       return prev - 1;
+  //     });
+  //   }, 1000);
 
-    return () => clearInterval(timer);
-  }, [currentPlayerIndex]);
+  //   return () => clearInterval(timer);
+  // }, [currentPlayerIndex]);
 
   // const triggerNextTurn = () => {
   //   if (!socketRef.current) return;
@@ -162,21 +179,19 @@ export default function Game() {
   }, [playerPositions, playerImages]);
 
   useEffect(() => {
-    if (isRouletteLarge || resultMessage) return;
+    if (isRouletteLarge) return;
     const countdown = setInterval(() => {
       setTimer((prev) => {
         if (prev === 1) {
           clearInterval(countdown);
-          setResultMessage("失敗！");
-          triggerNextTurn();
-          return 30;
+          return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(countdown);
-  }, [isRouletteLarge, resultMessage]);
+  }, [isRouletteLarge]);
 
   const drawField = () => {
     const canvas = canvasRef.current;
@@ -223,27 +238,27 @@ export default function Game() {
     setWord(value);
   };
 
+  const showResultMessage = (message: string, duration?: number) => {
+    setResultMessage(message);
+    setTimeout(() => {
+      setResultMessage(null);
+    }, duration ?? 1000);
+  };
+
   const checkWord = async () => {
     const fullWord = lastCharacter + word.join("");
     if (fullWord.length !== rouletteResult) {
-      setResultMessage(
+      showResultMessage(
         `最後の文字を含めて${rouletteResult}文字を入力してください。`
       );
-      setTimeout(() => {
-        setResultMessage(null); // メッセージを消す
-      }, 1000);
       return;
     }
     if (!/^[\u3040-\u309Fー]+$/.test(fullWord)) {
-      setResultMessage("ひらがなを入力してください！");
-      setTimeout(() => {
-        setResultMessage(null); // メッセージを消す
-      }, 1000);
+      showResultMessage("ひらがなを入力してください！");
       return;
     }
     if (fullWord.slice(-1) === "ん") {
-      setResultMessage("失敗！「ん」で終わったため終了です。");
-      triggerNextTurn(); // 次のターンへ
+      showResultMessage("「ん」で終わることはできません！");
       return;
     }
 
@@ -257,80 +272,95 @@ export default function Game() {
       })
     );
     setWord([]);
+    setIsSpinnable(false);
+    clearTimeout(timeUpRef.current);
 
-    try {
-      const response = await fetch(
-        `/api/check-word?word=${encodeURIComponent(fullWord)}`
-      );
-      const data = await response.json();
+    // try {
+    //   const response = await fetch(
+    //     `/api/check-word?word=${encodeURIComponent(fullWord)}`
+    //   );
+    //   const data = await response.json();
 
-      if (data.exists) {
-        setResultMessage("正解！");
-        setTimeout(() => {
-          setPlayerPositions((prevPositions) => {
-            const newPositions = [...prevPositions];
-            newPositions[currentPlayer] = Math.min(
-              newPositions[currentPlayer] + (rouletteResult || 0),
-              goal
-            );
-            return newPositions;
-          });
-          setHistory((prevHistory) => [...prevHistory, fullWord]);
-          setLastCharacter(fullWord.slice(-1)); // 最後の文字を次の単語の開始文字に設定
-          setResultMessage(null);
-          triggerNextTurn(); // 正解後、次のターンへ移行
-        }, 2000);
-      } else {
-        setResultMessage("失敗！この単語は存在しません。");
-        triggerNextTurn();
-      }
-    } catch {
-      setResultMessage("エラーが発生しました。");
-      triggerNextTurn();
-    } finally {
-      // setLoading(false);
-      setWord([]);
-      setRouletteResult(null);
-    }
+    //   if (data.exists) {
+    //     setResultMessage("正解！");
+    //     setTimeout(() => {
+    //       setPlayerPositions((prevPositions) => {
+    //         const newPositions = [...prevPositions];
+    //         newPositions[currentPlayer] = Math.min(
+    //           newPositions[currentPlayer] + (rouletteResult || 0),
+    //           goal
+    //         );
+    //         return newPositions;
+    //       });
+    //       setHistory((prevHistory) => [...prevHistory, fullWord]);
+    //       setLastCharacter(fullWord.slice(-1)); // 最後の文字を次の単語の開始文字に設定
+    //       setResultMessage(null);
+    //       triggerNextTurn(); // 正解後、次のターンへ移行
+    //     }, 2000);
+    //   } else {
+    //     setResultMessage("失敗！この単語は存在しません。");
+    //     triggerNextTurn();
+    //   }
+    // } catch {
+    //   setResultMessage("エラーが発生しました。");
+    //   triggerNextTurn();
+    // } finally {
+    //   // setLoading(false);
+    //   setWord([]);
+    //   setRouletteResult(null);
+    // }
   };
 
   const handleCheckResult = (data: any) => {
-    setResultMessage(data.valid ? "正解！" : "失敗！");
-    if (data.valid) {
-      setPlayerPositions((prev) => {
-        const newPositions = [...prev];
-        newPositions[currentPlayer] += rouletteResult || 0;
-        return newPositions;
-      });
-      setHistory((prev) => [...prev, lastCharacter + word.join("")]);
-      setLastCharacter((lastCharacter + word.join("")).slice(-1));
-    }
-    triggerNextTurn();
+    // setResultMessage(data.valid ? "正解！" : "失敗！");
+    // if (data.valid) {
+    //   setPlayerPositions((prev) => {
+    //     const newPositions = [...prev];
+    //     newPositions[currentPlayer] += rouletteResult || 0;
+    //     return newPositions;
+    //   });
+    //   setHistory((prev) => [...prev, lastCharacter + word.join("")]);
+    //   setLastCharacter((lastCharacter + word.join("")).slice(-1));
+    // }
+    // triggerNextTurn();
+    setTimer(0);
   };
 
   const updateGameState = (data: any) => {
     setPlayerPositions(data.players.map((p: any) => p.position));
-    setCurrentPlayer(data.currentPlayerIndex);
+    setCurrentPlayer(parseInt(data.currentPlayerIndex));
+    setCurrentPlayerIndex(parseInt(data.currentPlayerIndex));
     setHistory(data.wordHistory);
+    setLastCharacter(data.lastCharacter);
   };
 
   const triggerNextTurn = () => {
-    setTimeout(() => {
-      setResultMessage(null); // メッセージを消す
-      const nextPlayer = (currentPlayer + 1) % 4;
-      setCurrentPlayer(nextPlayer);
-      setIsRouletteLarge(true);
-      setTimer(30); // タイマーをリセット
-    }, 2000); // 2秒後に次のターンに移行
+    // setTimeout(() => {
+    //   setResultMessage(null); // メッセージを消す
+    //   const nextPlayer = (currentPlayer + 1) % 4;
+    //   setCurrentPlayer(nextPlayer);
+    //   setIsRouletteLarge(true);
+    //   setTimer(30); // タイマーをリセット
+    // }, 2000); // 2秒後に次のターンに移行
   };
 
   const handleRouletteResult = (result: number) => {
     setRouletteResult(result);
     setWord(Array(result - 1).fill(""));
     setIsRouletteLarge(false);
+
+    timeUpRef.current = setTimeout(() => {
+      socketRef.current.send(
+        JSON.stringify({
+          type: "timeIsUp",
+        })
+      );
+      setTimer(0);
+      setIsSpinnable(false);
+    }, 30000);
   };
 
-  const isCurrentUserTurn = players[currentPlayerIndex]?.username === userName;
+  // const isCurrentUserTurn = players[currentPlayerIndex]?.username === userName;
 
   return (
     <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 flex flex-col gap-6 p-6">
@@ -433,7 +463,7 @@ export default function Game() {
             <Roulette
               onResult={handleRouletteResult}
               isLarge={true}
-              isCurrentUserTurn={isCurrentUserTurn}
+              isCurrentUserTurn={isSpinnable}
               currentPlayer={players[currentPlayerIndex]?.username}
             />
           </div>

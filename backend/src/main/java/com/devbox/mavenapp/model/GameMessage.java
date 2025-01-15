@@ -5,6 +5,7 @@ public class GameMessage {
     private String word;
     private boolean valid;
     private boolean gameOver;
+    private int order;
     private int winner;
     private int playerId; // プレイヤーID
     private String userName; // ユーザー名を追加
@@ -65,4 +66,14 @@ public class GameMessage {
     public void setUserName(String userName) { // 新たに追加された Setter
         this.userName = userName;
     }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+
 }
