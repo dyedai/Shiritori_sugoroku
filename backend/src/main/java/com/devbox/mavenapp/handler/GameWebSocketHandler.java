@@ -151,7 +151,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         message.put("players", state.getPlayers());
         message.put("currentPlayerIndex", state.getCurrentPlayerIndex());
         message.put("wordHistory", state.getWordHistory());
-        message.put("lastCharacter", state.getLastCharacter());
+        message.put("lastCharacter", getLastCharacter(wordHistory));
 
         synchronized(sessions) {
             sessions.values().forEach(session -> {
@@ -200,6 +200,24 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                     logger.error("Error broadcasting result message to sessionId={}", session.getId(), e);
                 }
             }
+        }
+    }
+
+    public char getLastCharacter(List<String> wordHistory) {
+        if (wordHistory.isEmpty()) {
+            return 'り';
+        } else {
+            var lastWord = wordHistory.get(wordHistory.size() - 1);
+            return getNormalHiragana(lastWord.charAt(lastWord.length() - 1));
+        }
+    }
+
+    private char getNormalHiragana(char c) {
+        switch (c) {
+            case 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'っ', 'ゃ', 'ゅ', 'ょ':
+                return (char)((int)c + 1);
+            default:
+                return c;
         }
     }
 
