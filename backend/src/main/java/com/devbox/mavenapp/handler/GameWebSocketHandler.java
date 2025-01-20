@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -24,8 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GameWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);
-    private static final int MAX_PLAYERS = 2;
-    private static final int GOAL = 100;
+    private static final int MAX_PLAYERS = 4;
+    private static final int GOAL = 10;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
