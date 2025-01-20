@@ -9,7 +9,7 @@ import { Gamepad2, History } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import WordInput from "@/components/ui/word-input";
 
-const goal = 100;
+const goal = 10;
 
 export default function Game() {
   const router = useRouter();
@@ -30,9 +30,7 @@ export default function Game() {
   const [history, setHistory] = useState<string[]>([]);
   const [timer, setTimer] = useState(30);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
-  const [playerPositions, setPlayerPositions] = useState<number[]>(
-    Array(players.length).fill(0)
-  );
+  const [playerPositions, setPlayerPositions] = useState<number[]>(Array(players.length).fill(0));
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const submitButtonRef = useRef<HTMLButtonElement>(null);
@@ -46,10 +44,7 @@ export default function Game() {
   const socketRef = useRef<WebSocket | null>(null);
   console.log(players[currentPlayerIndex]?.username);
 
-  const getOrder = useMemo<number>(
-    () => players.findIndex((player) => player.userid === userId.toString()),
-    [players, userId]
-  );
+  const getOrder = useMemo<number>(() => players.findIndex((player) => player.userid === userId.toString()), [players, userId]);
 
   // Fetch authenticated user info
   useEffect(() => {
@@ -166,12 +161,7 @@ export default function Game() {
 
   useEffect(() => {
     const loadImages = async () => {
-      const sources = [
-        "/image/koma/koma1.png",
-        "/image/koma/koma2.png",
-        "/image/koma/koma3.png",
-        "/image/koma/koma4.png",
-      ];
+      const sources = ["/image/koma/koma1.png", "/image/koma/koma2.png", "/image/koma/koma3.png", "/image/koma/koma4.png"];
       const images = await Promise.all(
         sources.map((src) => {
           return new Promise<HTMLImageElement>((resolve) => {
@@ -227,21 +217,14 @@ export default function Game() {
         ctx.fillRect(xPos, (j + 1) * 60, 32, 8);
         if (i === 0) ctx.fillText("START", xPos, (j + 1) * 60 + 25);
         else if (i === goal) ctx.fillText("GOAL", xPos, (j + 1) * 60 + 25);
-        else if (i % 10 === 0)
-          ctx.fillText(i.toString(), xPos + 10, (j + 1) * 60 + 25);
+        else if (i % 10 === 0) ctx.fillText(i.toString(), xPos + 10, (j + 1) * 60 + 25);
       }
     }
 
     playerPositions.forEach((pos, index) => {
       if (playerImages[index]) {
         const playerX = 50 * pos + 67 - 15;
-        ctx.drawImage(
-          playerImages[index],
-          playerX,
-          (index + 1) * 60 - 30,
-          30,
-          30
-        );
+        ctx.drawImage(playerImages[index], playerX, (index + 1) * 60 - 30, 30, 30);
       }
     });
   };
@@ -270,9 +253,7 @@ export default function Game() {
   const checkWord = async () => {
     const fullWord = lastCharacter + word.join("");
     if (fullWord.length !== rouletteResult) {
-      showResultMessage(
-        `最後の文字を含めて${rouletteResult}文字を入力してください。`
-      );
+      showResultMessage(`最後の文字を含めて${rouletteResult}文字を入力してください。`);
       return;
     }
     if (!/^[\u3040-\u309Fー]+$/.test(fullWord)) {
@@ -414,12 +395,7 @@ export default function Game() {
           <Card className="w-full max-w-5xl shadow-lg">
             <CardContent>
               <div className="overflow-x-auto overflow-y-hidden whitespace-nowrap pb-4">
-                <canvas
-                  ref={canvasRef}
-                  width={50 * (goal + 1) + 100}
-                  height={300}
-                  className="mx-auto rounded-lg shadow-inner"
-                ></canvas>
+                <canvas ref={canvasRef} width={50 * (goal + 1) + 100} height={300} className="mx-auto rounded-lg shadow-inner"></canvas>
               </div>
             </CardContent>
           </Card>
@@ -429,16 +405,10 @@ export default function Game() {
                 {playerPositions.map((position, index) => (
                   <div key={index} className="flex flex-col items-center">
                     <Avatar className="w-9 h-9 mb-2">
-                      <AvatarImage
-                        src={`/image/koma/koma${index + 1}.png`}
-                        alt={`Player ${index + 1}`}
-                      />
+                      <AvatarImage src={`/image/koma/koma${index + 1}.png`} alt={`Player ${index + 1}`} />
                       <AvatarFallback>{index + 1}</AvatarFallback>
                     </Avatar>
-                    <Progress
-                      value={(position / goal) * 100}
-                      className="w-full"
-                    />
+                    <Progress value={(position / goal) * 100} className="w-full" />
                     <span className="text-sm font-medium mt-1">
                       {position}/{goal}
                       <br />
@@ -455,19 +425,11 @@ export default function Game() {
             <CardContent className="p-6">
               <div className="absolute top-2 right-4 flex items-center gap-2">
                 <span className="text-gray-700 text-sm">残り時間:</span>
-                <span className="text-purple-800 text-lg font-bold">
-                  {timer}s
-                </span>
+                <span className="text-purple-800 text-lg font-bold">{timer}s</span>
               </div>
               <div className="flex flex-col items-center justify-center gap-4">
-                <h3 className="text-xl font-bold text-purple-800 mb-2">
-                  {isCurrentUserTurn
-                    ? "あなたの番です"
-                    : `プレイヤー${currentPlayer + 1}の番です`}
-                </h3>
-                <p className="text-lg font-medium text-gray-700 mb-4">
-                  {rouletteResult}文字の単語を入力してください
-                </p>
+                <h3 className="text-xl font-bold text-purple-800 mb-2">{isCurrentUserTurn ? "あなたの番です" : `プレイヤー${currentPlayer + 1}の番です`}</h3>
+                <p className="text-lg font-medium text-gray-700 mb-4">{rouletteResult}文字の単語を入力してください</p>
                 <WordInput
                   lastCharacter={lastCharacter}
                   maxLength={rouletteResult}
@@ -523,9 +485,7 @@ export default function Game() {
       {resultMessage && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
           <div className="text-center flex items-center justify-center bg-white rounded-xl p-8 shadow-2xl">
-            <h2 className="text-5xl font-bold text-purple-800">
-              {resultMessage}
-            </h2>
+            <h2 className="text-5xl font-bold text-purple-800">{resultMessage}</h2>
           </div>
         </div>
       )}

@@ -99,7 +99,7 @@ export default function WaitScreen() {
         <h1 className="text-4xl font-bold text-black text-center mb-16">{playerCount}人が待機中</h1>
 
         <div className="space-y-4">
-          {Array(2)
+          {Array(4)
             .fill(null)
             .map((_, index) => (
               <motion.div

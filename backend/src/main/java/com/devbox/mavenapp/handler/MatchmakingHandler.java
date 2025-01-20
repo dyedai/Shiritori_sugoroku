@@ -1,14 +1,20 @@
 package com.devbox.mavenapp.handler;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MatchmakingHandler extends TextWebSocketHandler {
 
@@ -16,7 +22,7 @@ public class MatchmakingHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> sessionToPlayer = new ConcurrentHashMap<>(); // sessionId -> {username, userid}
-    private static final int MAX_PLAYERS = 2;
+    private static final int MAX_PLAYERS = 4;
     private final List<Map<String, String>> players = Collections.synchronizedList(new ArrayList<>());
     private String roomId = UUID.randomUUID().toString(); // 固定のRoom IDを生成
 
