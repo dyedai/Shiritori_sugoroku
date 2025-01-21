@@ -445,33 +445,31 @@ export default function Game() {
               </div>
             </CardContent>
           </Card>
-          <Card className="w-[250px] flex flex-col justify-center items-center shadow-lg">
-            <CardContent>
-              <div className="grid grid-row-4 w-40 gap-4 mt-4">
-                {playerPositions.map((position, index) => (
-                  <div key={index} className="flex flex-col items-center">
-                    <div className="flex items-center justify-start gap-3">
-                      <Avatar className="w-9 h-9 mb-2">
-                        <AvatarImage
-                          src={`/image/koma/koma${index + 1}.png`}
-                          alt={`Player ${index + 1}`}
-                        />
-                        <AvatarFallback>{index + 1}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-bold mt-1  text-blue-400 truncate w-[90px]">
-                        {players[index]?.username}
-                      </span>
-                    </div>
+          <Card className="w-[250px] h-[400px] flex flex-col justify-center items-center shadow-lg">
+            <CardContent className="w-full flex flex-col items-center gap-4 justify-center py-3 px-5">
+              {playerPositions.map((position, index) => (
+                <div key={index} className="flex flex-col items-center w-full">
+                  <Avatar className="w-9 h-9">
+                    <AvatarImage
+                      src={`/image/koma/koma${index + 1}.png`}
+                      alt={`Player ${index + 1}`}
+                    />
+                    <AvatarFallback>{index + 1}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex w-full items-center gap-3">
                     <Progress
                       value={(position / goal) * 100}
                       className="w-full"
                     />
-                    <span className="text-sm font-medium mt-1">
+                    <span className="text-sm font-medium ">
                       {position}/{goal}
                     </span>
                   </div>
-                ))}
-              </div>
+                  <span className="text-sm font-bold text-center text-gray-600 truncate w-[90px]">
+                    {players[index]?.username}
+                  </span>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>
