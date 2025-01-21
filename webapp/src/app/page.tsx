@@ -7,17 +7,31 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dice5, Info, LogOut } from "lucide-react";
 import Link from "next/link";
-import { log } from "console";
 
 export default function Component() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter(); // useRouterフックを使用
 
-  // Function to handle logout confirmation and redirect
-  const handleLogout = () => {
-    // ログアウト処理後に /login にリダイレクト
-    router.push("/login");
-    console.log("ログアウトしたよん");
+  // ログアウト処理
+  const handleLogout = async () => {
+    try {
+      // API にログアウトリクエストを送信
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+
+      if (response.ok) {
+        console.log("ログアウト成功");
+        alert("ログアウトしました");
+
+        // ログインページへリダイレクト
+        router.push("/login");
+      } else {
+        console.error("ログアウト失敗");
+        alert("ログアウトに失敗しました");
+      }
+    } catch (error) {
+      console.error("エラー:", error);
+      alert("エラーが発生しました");
+    }
   };
 
   return (
