@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.devbox.mavenapp.AppTest" time="0.008" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.devbox.mavenapp.handler.MatchmakingHandlerTest" time="1.824" tests="6" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -36,7 +36,6 @@
     <property name="os.version" value="5.15.167.4-microsoft-standard-WSL2"/>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="file.encoding" value="UTF-8"/>
-    <property name="sun.net.http.allowRestrictedHeaders" value="true"/>
     <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
     <property name="localRepository" value="/home/user/.m2/repository"/>
     <property name="java.vendor.url.bug" value="https://bugs.launchpad.net/ubuntu/+source/openjdk-21"/>
@@ -54,5 +53,91 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="65.0"/>
   </properties>
-  <testcase name="testApp" classname="com.devbox.mavenapp.AppTest" time="0.004"/>
+  <testcase name="testHandleTextMessage_DuplicatePlayer" classname="com.devbox.mavenapp.handler.MatchmakingHandlerTest" time="1.677">
+    <system-out><![CDATA[03:17:54.619 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session1
+03:17:54.624 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session1, payload={"type":"join","userName":"Player1","userId":"12345"}
+03:17:54.646 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player joined: Player1 (12345) in room 7459ef78-3bd1-4d9f-92c5-c0e8a9f61150
+03:17:54.647 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: [{userid=12345, username=Player1}]
+03:17:54.653 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"playerCount":1,"players":[{"userid":"12345","username":"Player1"}],"type":"playerUpdate","roomId":"7459ef78-3bd1-4d9f-92c5-c0e8a9f61150"}
+03:17:54.654 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session2
+03:17:54.655 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session2, payload={"type":"join","userName":"Player1","userId":"12345"}
+03:17:54.655 [main] WARN com.devbox.mavenapp.handler.MatchmakingHandler - Duplicate player attempt: Player1 (12345)
+]]></system-out>
+    <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (/home/user/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.5/byte-buddy-agent-1.14.5.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+  </testcase>
+  <testcase name="testHandleTextMessage_JoinPlayer" classname="com.devbox.mavenapp.handler.MatchmakingHandlerTest" time="0.025">
+    <system-out><![CDATA[03:17:54.691 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session1
+03:17:54.692 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session1, payload={"type":"join","userName":"Player1","userId":"12345"}
+03:17:54.694 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player joined: Player1 (12345) in room 166e7d0e-0e28-48d4-b48c-1be064db4652
+03:17:54.694 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: [{userid=12345, username=Player1}]
+03:17:54.698 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"playerCount":1,"players":[{"userid":"12345","username":"Player1"}],"type":"playerUpdate","roomId":"166e7d0e-0e28-48d4-b48c-1be064db4652"}
+]]></system-out>
+  </testcase>
+  <testcase name="testAfterConnectionClosed" classname="com.devbox.mavenapp.handler.MatchmakingHandlerTest" time="0.023">
+    <system-out><![CDATA[03:17:54.722 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session1
+03:17:54.723 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session1, payload={"type":"join","userName":"Player1","userId":"12345"}
+03:17:54.725 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player joined: Player1 (12345) in room e9ce812b-0f64-41fb-b9c2-4d0dc3b0e905
+03:17:54.725 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: [{userid=12345, username=Player1}]
+03:17:54.726 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"playerCount":1,"players":[{"userid":"12345","username":"Player1"}],"type":"playerUpdate","roomId":"e9ce812b-0f64-41fb-b9c2-4d0dc3b0e905"}
+03:17:54.726 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player disconnected: sessionId=session1, status={}
+03:17:54.727 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Removed player: Player1 (12345)
+03:17:54.727 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: []
+]]></system-out>
+  </testcase>
+  <testcase name="testStartGame" classname="com.devbox.mavenapp.handler.MatchmakingHandlerTest" time="0.023">
+    <system-out><![CDATA[03:17:54.752 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session1
+03:17:54.752 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session1, payload={"type":"join","userName":"Player1","userId":"12345"}
+03:17:54.753 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player joined: Player1 (12345) in room 0d318bc5-8a1f-4b09-9300-6c9f32cda27e
+03:17:54.754 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: [{userid=12345, username=Player1}]
+03:17:54.755 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"playerCount":1,"players":[{"userid":"12345","username":"Player1"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.755 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session2
+03:17:54.755 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session2, payload={"type":"join","userName":"Player2","userId":"54321"}
+03:17:54.756 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player joined: Player2 (54321) in room 0d318bc5-8a1f-4b09-9300-6c9f32cda27e
+03:17:54.756 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: [{userid=12345, username=Player1}, {userid=54321, username=Player2}]
+03:17:54.756 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session2: {"playerCount":2,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.757 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"playerCount":2,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.757 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session3
+03:17:54.757 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session3, payload={"type":"join","userName":"Player3","userId":"13579"}
+03:17:54.758 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player joined: Player3 (13579) in room 0d318bc5-8a1f-4b09-9300-6c9f32cda27e
+03:17:54.758 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: [{userid=12345, username=Player1}, {userid=54321, username=Player2}, {userid=13579, username=Player3}]
+03:17:54.758 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session3: {"playerCount":3,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.759 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session2: {"playerCount":3,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.759 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"playerCount":3,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.759 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session4
+03:17:54.759 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session4, payload={"type":"join","userName":"Player4","userId":"24680"}
+03:17:54.759 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player joined: Player4 (24680) in room 0d318bc5-8a1f-4b09-9300-6c9f32cda27e
+03:17:54.760 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: [{userid=12345, username=Player1}, {userid=54321, username=Player2}, {userid=13579, username=Player3}, {userid=24680, username=Player4}]
+03:17:54.760 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session4: {"playerCount":4,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"},{"userid":"24680","username":"Player4"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.760 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session3: {"playerCount":4,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"},{"userid":"24680","username":"Player4"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.760 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session2: {"playerCount":4,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"},{"userid":"24680","username":"Player4"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.760 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"playerCount":4,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"},{"userid":"24680","username":"Player4"}],"type":"playerUpdate","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.760 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Starting game with players: [{userid=12345, username=Player1}, {userid=54321, username=Player2}, {userid=13579, username=Player3}, {userid=24680, username=Player4}]
+03:17:54.761 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session4: {"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"},{"userid":"24680","username":"Player4"}],"type":"startGame","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.761 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session3: {"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"},{"userid":"24680","username":"Player4"}],"type":"startGame","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.761 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session2: {"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"},{"userid":"24680","username":"Player4"}],"type":"startGame","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+03:17:54.761 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"},{"userid":"13579","username":"Player3"},{"userid":"24680","username":"Player4"}],"type":"startGame","roomId":"0d318bc5-8a1f-4b09-9300-6c9f32cda27e"}
+]]></system-out>
+  </testcase>
+  <testcase name="testBroadcastPlayerUpdate" classname="com.devbox.mavenapp.handler.MatchmakingHandlerTest" time="0.012">
+    <system-out><![CDATA[03:17:54.772 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session1
+03:17:54.773 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session1, payload={"type":"join","userName":"Player1","userId":"12345"}
+03:17:54.774 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player joined: Player1 (12345) in room f7df13de-e224-49ff-b728-fdee52e602d0
+03:17:54.774 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: [{userid=12345, username=Player1}]
+03:17:54.775 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"playerCount":1,"players":[{"userid":"12345","username":"Player1"}],"type":"playerUpdate","roomId":"f7df13de-e224-49ff-b728-fdee52e602d0"}
+03:17:54.775 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session2
+03:17:54.775 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message received: sessionId=session2, payload={"type":"join","userName":"Player2","userId":"54321"}
+03:17:54.775 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Player joined: Player2 (54321) in room f7df13de-e224-49ff-b728-fdee52e602d0
+03:17:54.776 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Broadcasting player update. Current players: [{userid=12345, username=Player1}, {userid=54321, username=Player2}]
+03:17:54.776 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session2: {"playerCount":2,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"}],"type":"playerUpdate","roomId":"f7df13de-e224-49ff-b728-fdee52e602d0"}
+03:17:54.776 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - Message sent to sessionId=session1: {"playerCount":2,"players":[{"userid":"12345","username":"Player1"},{"userid":"54321","username":"Player2"}],"type":"playerUpdate","roomId":"f7df13de-e224-49ff-b728-fdee52e602d0"}
+]]></system-out>
+  </testcase>
+  <testcase name="testAfterConnectionEstablished" classname="com.devbox.mavenapp.handler.MatchmakingHandlerTest" time="0.006">
+    <system-out><![CDATA[03:17:54.786 [main] INFO com.devbox.mavenapp.handler.MatchmakingHandler - New player connected: sessionId=session1
+]]></system-out>
+  </testcase>
 </testsuite>
