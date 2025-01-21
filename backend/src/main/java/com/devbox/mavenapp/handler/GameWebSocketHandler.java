@@ -37,6 +37,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         logger.info("New connection established: sessionId={}", session.getId());
         sessions.put(session.getId(), session);
+
+        synchronized (players) {
+        // 接続時にwordHistoryをクリアし、lastCharacterを"り"に初期化
+        wordHistory.clear();
+        broadcastState();
+        }
     }
 
     @Override
@@ -254,13 +260,20 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     private char getLastCharacter(List<String> wordHistory) {
-        if (wordHistory.isEmpty()) {
-            return 'り';
-        } else {
-            String lastWord = wordHistory.get(wordHistory.size() - 1);
-            return getNormalHiragana(lastWord.charAt(lastWord.length() - 1));
+    if (wordHistory.isEmpty()) {
+        return 'り'; // デフォルト値
+    } else {
+        String lastWord = wordHistory.get(wordHistory.size() - 1);
+        char lastChar = lastWord.charAt(lastWord.length() - 1);
+
+        // 最後の文字が "ー" の場合、ひとつ前の文字を取得
+        if (lastChar == 'ー' && lastWord.length() > 1) {
+            lastChar = lastWord.charAt(lastWord.length() - 2);
         }
+
+        return getNormalHiragana(lastChar);
     }
+}
 
     private char getNormalHiragana(char c) {
         switch (c) {
