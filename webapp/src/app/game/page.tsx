@@ -450,7 +450,7 @@ export default function Game() {
               <div className="grid grid-row-4 w-40 gap-4 mt-4">
                 {playerPositions.map((position, index) => (
                   <div key={index} className="flex flex-col items-center">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <Avatar className="w-9 h-9 mb-2">
                         <AvatarImage
                           src={`/image/koma/koma${index + 1}.png`}
