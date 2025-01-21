@@ -30,7 +30,9 @@ export default function Game() {
   const [history, setHistory] = useState<string[]>([]);
   const [timer, setTimer] = useState(30);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
-  const [playerPositions, setPlayerPositions] = useState<number[]>(Array(players.length).fill(0));
+  const [playerPositions, setPlayerPositions] = useState<number[]>(
+    Array(players.length).fill(0)
+  );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const submitButtonRef = useRef<HTMLButtonElement>(null);
@@ -44,7 +46,10 @@ export default function Game() {
   const socketRef = useRef<WebSocket | null>(null);
   console.log(players[currentPlayerIndex]?.username);
 
-  const getOrder = useMemo<number>(() => players.findIndex((player) => player.userid === userId.toString()), [players, userId]);
+  const getOrder = useMemo<number>(
+    () => players.findIndex((player) => player.userid === userId.toString()),
+    [players, userId]
+  );
 
   // Fetch authenticated user info
   useEffect(() => {
@@ -161,7 +166,12 @@ export default function Game() {
 
   useEffect(() => {
     const loadImages = async () => {
-      const sources = ["/image/koma/koma1.png", "/image/koma/koma2.png", "/image/koma/koma3.png", "/image/koma/koma4.png"];
+      const sources = [
+        "/image/koma/koma1.png",
+        "/image/koma/koma2.png",
+        "/image/koma/koma3.png",
+        "/image/koma/koma4.png",
+      ];
       const images = await Promise.all(
         sources.map((src) => {
           return new Promise<HTMLImageElement>((resolve) => {
@@ -216,17 +226,24 @@ export default function Game() {
       const xPos = 50 * i + 50;
       for (let j = 0; j < numPlayers; j++) {
         ctx.fillStyle = "#aaaaaa";
-        ctx.fillRect(xPos, (j + 1) * 60, 32, 8);
-        if (i === 0) ctx.fillText("START", xPos, (j + 1) * 60 + 25);
-        else if (i === goal) ctx.fillText("GOAL", xPos, (j + 1) * 60 + 25);
-        else if (i % 10 === 0) ctx.fillText(i.toString(), xPos + 10, (j + 1) * 60 + 25);
+        ctx.fillRect(xPos, (j + 1) * 70, 32, 8);
+        if (i === 0) ctx.fillText("START", xPos, (j + 1) * 70 + 25);
+        else if (i === goal) ctx.fillText("GOAL", xPos, (j + 1) * 70 + 25);
+        else if (i % 10 === 0)
+          ctx.fillText(i.toString(), xPos + 10, (j + 1) * 70 + 25);
       }
     }
 
     playerPositions.forEach((pos, index) => {
       if (playerImages[index]) {
         const playerX = 50 * pos + 67 - 15;
-        ctx.drawImage(playerImages[index], playerX, (index + 1) * 60 - 30, 30, 30);
+        ctx.drawImage(
+          playerImages[index],
+          playerX,
+          (index + 1) * 70 - 30,
+          30,
+          30
+        );
       }
     });
   };
@@ -255,7 +272,9 @@ export default function Game() {
   const checkWord = async () => {
     const fullWord = lastCharacter + word.join("");
     if (fullWord.length !== rouletteResult) {
-      showResultMessage(`最後の文字を含めて${rouletteResult}文字を入力してください。`);
+      showResultMessage(
+        `最後の文字を含めて${rouletteResult}文字を入力してください。`
+      );
       return;
     }
     if (!/^[\u3040-\u309Fー]+$/.test(fullWord)) {
@@ -401,7 +420,11 @@ export default function Game() {
     // 誰かがゴールに到達した場合
     if (playerPositions.some((position) => position >= goal)) {
       // 結果画面へ遷移
-      router.push(`/result?rankings=${encodeURIComponent(JSON.stringify(sortedPlayers.map((player) => player.username)))}`);
+      router.push(
+        `/result?rankings=${encodeURIComponent(
+          JSON.stringify(sortedPlayers.map((player) => player.username))
+        )}`
+      );
       console.log(sortedPlayers);
     }
   }, [playerPositions, goal, router, sortedPlayers]);
@@ -410,27 +433,41 @@ export default function Game() {
     <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 flex flex-col gap-6 p-6">
       <div className="flex flex-col w-fit gap-4">
         <div className="flex w-full items-center justify-center gap-4">
-          <Card className="w-full max-w-5xl shadow-lg">
+          <Card className="w-[800px] flex justify-center items-center h-[400px] shadow-lg">
             <CardContent>
-              <div className="overflow-x-auto overflow-y-hidden whitespace-nowrap pb-4">
-                <canvas ref={canvasRef} width={50 * (goal + 1) + 100} height={300} className="mx-auto rounded-lg shadow-inner"></canvas>
+              <div className="overflow-x-auto overflow-y-hidden whitespace-nowrap ">
+                <canvas
+                  ref={canvasRef}
+                  width={50 * (goal + 1) + 100}
+                  height={340}
+                  className="mx-auto"
+                ></canvas>
               </div>
             </CardContent>
           </Card>
-          <Card className="w-fill h-full shadow-lg">
+          <Card className="w-[250px]   flex flex-col justify-center items-center shadow-lg">
             <CardContent>
               <div className="grid grid-row-4 w-40 gap-4 mt-4">
                 {playerPositions.map((position, index) => (
                   <div key={index} className="flex flex-col items-center">
-                    <Avatar className="w-9 h-9 mb-2">
-                      <AvatarImage src={`/image/koma/koma${index + 1}.png`} alt={`Player ${index + 1}`} />
-                      <AvatarFallback>{index + 1}</AvatarFallback>
-                    </Avatar>
-                    <Progress value={(position / goal) * 100} className="w-full" />
+                    <div className="flex items-center gap-1">
+                      <Avatar className="w-9 h-9 mb-2">
+                        <AvatarImage
+                          src={`/image/koma/koma${index + 1}.png`}
+                          alt={`Player ${index + 1}`}
+                        />
+                        <AvatarFallback>{index + 1}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium mt-1 text-gray-600">
+                        {players[index]?.username}
+                      </span>
+                    </div>
+                    <Progress
+                      value={(position / goal) * 100}
+                      className="w-full"
+                    />
                     <span className="text-sm font-medium mt-1">
                       {position}/{goal}
-                      <br />
-                      {players[index]?.username}
                     </span>
                   </div>
                 ))}
@@ -439,15 +476,23 @@ export default function Game() {
           </Card>
         </div>
         <div className="flex w-full h-[300px] justify-center gap-6 items-center">
-          <Card className="w-1/2 min-w-[500px] shadow-lg relative">
+          <Card className="w-1/2  shadow-lg relative">
             <CardContent className="p-6">
               <div className="absolute top-2 right-4 flex items-center gap-2">
                 <span className="text-gray-700 text-sm">残り時間:</span>
-                <span className="text-blue-600 text-lg font-bold">{timer}s</span>
+                <span className="text-blue-600 text-lg font-bold">
+                  {timer}s
+                </span>
               </div>
               <div className="flex flex-col items-center justify-center gap-4">
-                <h3 className="text-xl font-bold text-blue-600 mb-2">{isCurrentUserTurn ? "あなたの番です" : `${players[currentPlayerIndex]?.username || ""}の番です`}</h3>
-                <p className="text-lg font-medium text-gray-700 mb-4">{rouletteResult}文字の単語を入力してください</p>
+                <h3 className="text-xl font-bold text-blue-600 mb-2">
+                  {isCurrentUserTurn
+                    ? "あなたの番です"
+                    : `${players[currentPlayerIndex]?.username || ""}の番です`}
+                </h3>
+                <p className="text-lg font-medium text-gray-700 mb-4">
+                  {rouletteResult}文字の単語を入力してください
+                </p>
                 <WordInput
                   lastCharacter={lastCharacter}
                   maxLength={rouletteResult}
@@ -504,7 +549,9 @@ export default function Game() {
       {resultMessage && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
           <div className="text-center flex items-center justify-center bg-white rounded-xl p-8 shadow-2xl">
-            <h2 className="text-5xl font-bold text-blue-600">{resultMessage}</h2>
+            <h2 className="text-5xl font-bold text-blue-600">
+              {resultMessage}
+            </h2>
           </div>
         </div>
       )}
