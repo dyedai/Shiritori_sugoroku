@@ -29,6 +29,7 @@ const hiraganaPattern = /^[\u3041-\u3096\u30fc]+$/;
 const WordInput = (props: WordInputProps) => {
   const { maxLength, lastCharacter, value, onChange, onSubmit, disabled } = props;
   const [pos, setPos] = useState<number | undefined>(undefined);
+  const [isChangeable, setIsChangeable] = useState(true);
   const inputRefs = useRef<HTMLInputElement[]>([]);
 
   const chars: string[] = useMemo(() => [...value, ...new Array(Math.max(maxLength - value.length - 1, 0)).fill("")].slice(0, maxLength - 1), [value, maxLength]);
@@ -46,8 +47,22 @@ const WordInput = (props: WordInputProps) => {
     [pos, maxLength, inputRefs]
   );
 
+  // 50msだけ入力を無視させる
+  const prependChange = useCallback(() => {
+    setIsChangeable(false);
+
+    setTimeout(() => {
+      setIsChangeable(true);
+    }, 50)
+  }, []);
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
+      e.preventDefault();
+
+      // 一部IMEでの多重入力防止
+      if (!isChangeable) return;
+
       // 文字が消去されたらカーソルを1つ前に戻す
       if (e.target.value === "") {
         chars[pos] = "";
@@ -59,6 +74,7 @@ const WordInput = (props: WordInputProps) => {
       if (!fullJapanesePattern.test(e.target.value)) return;
 
       const newChar = e.target.value;
+      prependChange();
 
       if (hiraganaPattern.test(newChar)) {
         // 変換された平仮名が2文字以上のとき隣の入力欄にも伝搬
@@ -74,7 +90,7 @@ const WordInput = (props: WordInputProps) => {
 
       onChange(chars);
     },
-    [chars, onChange, pos, changePos]
+    [chars, onChange, pos, changePos, isChangeable, prependChange]
   );
 
   const handleKeyDown = useCallback(
