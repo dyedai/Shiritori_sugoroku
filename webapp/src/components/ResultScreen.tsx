@@ -14,7 +14,14 @@ export default function ResultsScreen() {
   const rankings = rankingsParam ? JSON.parse(rankingsParam) : ["ちーむびー", "ちーむしー", "ちーむえー", "ちーむでぃ"];
 
   // シェアメッセージ (1位を基に動的に生成)
-  const shareMessage = encodeURIComponent(`ゲームの結果！1位: ${rankings[0]} 🎉`);
+  const shareMessage = encodeURIComponent(
+    `しりとりすごろくゲームの結果！
+
+    1位: ${rankings[0]} 🎉　
+    2位: ${rankings[1]} 
+    3位: ${rankings[2]} 
+    4位: ${rankings[3]}`
+  );
 
   // ハンドラー
   const handleHomeClick = () => {

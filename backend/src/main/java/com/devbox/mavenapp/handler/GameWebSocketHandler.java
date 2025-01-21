@@ -112,10 +112,23 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void handleCheckWord(WebSocketSession session, GameMessage message) throws Exception {
-        String word = message.getWord();
-        int playerId = message.getPlayerId();
-        logger.info("Player {} validating word: {}", playerId, word);
+    String word = message.getWord();
+    int playerId = message.getPlayerId();
+    logger.info("Player {} validating word: {}", playerId, word);
 
+    synchronized (wordHistory) {
+        // 使用済み単語のチェック
+        if (wordHistory.contains(word)) {
+            logger.warn("Word already used: {}", word);
+
+            // 使用済み単語の通知
+            broadcastResultMessage("「%s」は既に使われた単語です。再入力してください。".formatted(word));
+            return; // 処理を終了
+
+            
+        }
+
+        // 単語のバリデーション
         boolean isValid = validateWordWithWeblio(word);
 
         GameMessage response = new GameMessage();
@@ -150,6 +163,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         Thread.sleep(1000);
 
         broadcastStartTurn();
+        }
     }
 
     private void handleTimeIsUp(WebSocketSession session, GameMessage message) {
