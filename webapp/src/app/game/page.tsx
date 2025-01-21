@@ -9,7 +9,7 @@ import { Gamepad2, History } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import WordInput from "@/components/ui/word-input";
 
-const goal = 5;
+const goal = 25;
 
 export default function Game() {
   const router = useRouter();
@@ -435,7 +435,7 @@ export default function Game() {
         <div className="flex w-full items-center justify-center gap-4">
           <Card className="w-[800px] flex justify-center items-center h-[400px] shadow-lg">
             <CardContent>
-              <div className="overflow-x-auto overflow-y-hidden whitespace-nowrap ">
+              <div className=" whitespace-nowrap max-w-[800px]  overflow-x-auto overflow-y-hidden">
                 <canvas
                   ref={canvasRef}
                   width={50 * (goal + 1) + 100}
