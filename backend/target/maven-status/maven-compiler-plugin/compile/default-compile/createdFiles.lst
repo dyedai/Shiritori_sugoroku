@@ -1,0 +1,6 @@
+com/devbox/mavenapp/service/GameService.class
+com/devbox/mavenapp/handler/GameWebSocketHandler.class
+com/devbox/mavenapp/handler/MatchmakingHandler.class
+com/devbox/mavenapp/model/GameState.class
+com/devbox/mavenapp/config/WebSocketConfig.class
+com/devbox/mavenapp/MavenAppApplication.class
