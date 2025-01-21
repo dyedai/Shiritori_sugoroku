@@ -407,7 +407,7 @@ export default function Game() {
   }, [playerPositions, goal, router, sortedPlayers]);
 
   return (
-    <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 flex flex-col gap-6 p-6">
+    <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 flex flex-col gap-6 p-6">
       <div className="flex flex-col w-fit gap-4">
         <div className="flex w-full items-center justify-center gap-4">
           <Card className="w-full max-w-5xl shadow-lg">
@@ -443,10 +443,10 @@ export default function Game() {
             <CardContent className="p-6">
               <div className="absolute top-2 right-4 flex items-center gap-2">
                 <span className="text-gray-700 text-sm">残り時間:</span>
-                <span className="text-purple-800 text-lg font-bold">{timer}s</span>
+                <span className="text-blue-600 text-lg font-bold">{timer}s</span>
               </div>
               <div className="flex flex-col items-center justify-center gap-4">
-                <h3 className="text-xl font-bold text-purple-800 mb-2">{isCurrentUserTurn ? "あなたの番です" : `${players[currentPlayerIndex]?.username || ""}の番です`}</h3>
+                <h3 className="text-xl font-bold text-blue-600 mb-2">{isCurrentUserTurn ? "あなたの番です" : `${players[currentPlayerIndex]?.username || ""}の番です`}</h3>
                 <p className="text-lg font-medium text-gray-700 mb-4">{rouletteResult}文字の単語を入力してください</p>
                 <WordInput
                   lastCharacter={lastCharacter}
@@ -471,7 +471,7 @@ export default function Game() {
           </Card>
           <Card className="w-1/2 h-[300px] shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xl font-bold text-purple-800 flex items-center gap-2">
+              <CardTitle className="text-xl font-bold text-blue-600 flex items-center gap-2">
                 <History className="w-6 h-6" />
                 しりとり履歴
               </CardTitle>
@@ -485,7 +485,7 @@ export default function Game() {
       {isRouletteVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
           <div className="text-center bg-white rounded-xl p-8 shadow-2xl">
-            <h2 className="text-3xl font-bold text-purple-800 mb-6 flex items-center justify-center gap-2">
+            <h2 className="text-3xl font-bold text-blue-600 mb-6 flex items-center justify-center gap-2">
               <Gamepad2 className="w-8 h-8" />
               {/* プレイヤー{currentPlayer + 1}の番 */}
               {players[currentPlayerIndex]?.username || ""}の番
@@ -504,7 +504,7 @@ export default function Game() {
       {resultMessage && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
           <div className="text-center flex items-center justify-center bg-white rounded-xl p-8 shadow-2xl">
-            <h2 className="text-5xl font-bold text-purple-800">{resultMessage}</h2>
+            <h2 className="text-5xl font-bold text-blue-600">{resultMessage}</h2>
           </div>
         </div>
       )}

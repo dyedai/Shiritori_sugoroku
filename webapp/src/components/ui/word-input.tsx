@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  ChangeEvent,
-  KeyboardEvent,
-  KeyboardEventHandler,
-  Ref,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ChangeEvent, KeyboardEvent, KeyboardEventHandler, Ref, useCallback, useMemo, useRef, useState } from "react";
 import { Input } from "./input";
 
 export type WordInputProps = {
@@ -32,24 +23,15 @@ type CharacterProps = {
   disabled?: boolean;
 };
 
-const fullJapanesePattern =
-  /^[\uFF21-\uFF3A\uFF41-\uFF5A\u3041-\u3096\u30fc]+$/;
+const fullJapanesePattern = /^[\uFF21-\uFF3A\uFF41-\uFF5A\u3041-\u3096\u30fc]+$/;
 const hiraganaPattern = /^[\u3041-\u3096\u30fc]+$/;
 
 const WordInput = (props: WordInputProps) => {
-  const { maxLength, lastCharacter, value, onChange, onSubmit, disabled } =
-    props;
+  const { maxLength, lastCharacter, value, onChange, onSubmit, disabled } = props;
   const [pos, setPos] = useState<number | undefined>(undefined);
   const inputRefs = useRef<HTMLInputElement[]>([]);
 
-  const chars: string[] = useMemo(
-    () =>
-      [
-        ...value,
-        ...new Array(Math.max(maxLength - value.length - 1, 0)).fill(""),
-      ].slice(0, maxLength - 1),
-    [value, maxLength]
-  );
+  const chars: string[] = useMemo(() => [...value, ...new Array(Math.max(maxLength - value.length - 1, 0)).fill("")].slice(0, maxLength - 1), [value, maxLength]);
 
   const changePos = useCallback(
     (offset: number | false) => {
@@ -110,10 +92,7 @@ const WordInput = (props: WordInputProps) => {
 
   return (
     <>
-      <div
-        className="flex items-center justify-center gap-2 mb-6"
-        onBlur={() => setPos(undefined)}
-      >
+      <div className="flex items-center justify-center gap-2 mb-6" onBlur={() => setPos(undefined)}>
         <Character character={lastCharacter} locked />
         {chars.map((char, index) => {
           return (
@@ -137,32 +116,17 @@ const WordInput = (props: WordInputProps) => {
 };
 
 const Character = (props: CharacterProps) => {
-  const {
-    character,
-    locked,
-    current,
-    onClick,
-    onChange,
-    onKeyDown,
-    inputRef,
-    disabled,
-  } = props;
+  const { character, locked, current, onClick, onChange, onKeyDown, inputRef, disabled } = props;
 
   return (
     <div className="w-12 h-12 relative rounded-lg">
       <div
-        className={`w-12 h-12 absolute z-0 inset-0 rounded-lg border-collapse duration-700 transition-opacity ${
-          locked ? "border-purple-500 bg-purple-100" : "bg-transparent"
-        } ${
-          current
-            ? "border-purple-500 border-4 animate-pulse"
-            : "border-purple-300 border-2 animate-none"
+        className={`w-12 h-12 absolute z-0 inset-0 rounded-lg border-collapse duration-700 transition-opacity ${locked ? "border-blue-500 bg-blue-100" : "bg-transparent"} ${
+          current ? "border-blue-500 border-4 animate-pulse" : "border-blue-300 border-2 animate-none"
         }`}
       ></div>
       {locked ? (
-        <div className="w-12 h-12 absolute z-10 inset-0 flex justify-center items-center font-bold text-xl text-purple-800">
-          {character}
-        </div>
+        <div className="w-12 h-12 absolute z-10 inset-0 flex justify-center items-center font-bold text-xl text-blue-800">{character}</div>
       ) : (
         <Input
           className={`w-12 h-12 absolute z-10 inset-0 text-center`}
