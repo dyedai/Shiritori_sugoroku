@@ -445,12 +445,12 @@ export default function Game() {
               </div>
             </CardContent>
           </Card>
-          <Card className="w-[250px]   flex flex-col justify-center items-center shadow-lg">
+          <Card className="w-[250px] flex flex-col justify-center items-center shadow-lg">
             <CardContent>
               <div className="grid grid-row-4 w-40 gap-4 mt-4">
                 {playerPositions.map((position, index) => (
                   <div key={index} className="flex flex-col items-center">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-start gap-3">
                       <Avatar className="w-9 h-9 mb-2">
                         <AvatarImage
                           src={`/image/koma/koma${index + 1}.png`}
@@ -458,7 +458,7 @@ export default function Game() {
                         />
                         <AvatarFallback>{index + 1}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium mt-1 text-gray-600">
+                      <span className="text-sm font-bold mt-1  text-blue-400 truncate w-[90px]">
                         {players[index]?.username}
                       </span>
                     </div>
