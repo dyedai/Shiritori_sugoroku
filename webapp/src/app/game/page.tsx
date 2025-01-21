@@ -439,7 +439,7 @@ export default function Game() {
           </Card>
         </div>
         <div className="flex w-full h-[300px] justify-center gap-6 items-center">
-          <Card className="w-1/2 shadow-lg relative">
+          <Card className="w-1/2 min-w-[500px] shadow-lg relative">
             <CardContent className="p-6">
               <div className="absolute top-2 right-4 flex items-center gap-2">
                 <span className="text-gray-700 text-sm">残り時間:</span>
