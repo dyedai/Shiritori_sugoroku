@@ -9,7 +9,7 @@ import { Gamepad2, History } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import WordInput from "@/components/ui/word-input";
 
-const goal = 10;
+const goal = 5;
 
 export default function Game() {
   const router = useRouter();
@@ -172,6 +172,8 @@ export default function Game() {
         })
       );
       setPlayerImages(images);
+      setHistory([]);
+      setLastCharacter("り");
     };
     loadImages();
   }, []);
@@ -388,6 +390,22 @@ export default function Game() {
     setWord(Array.from(wordStr).map((c) => (c === " " ? "" : c)));
   };
 
+  const sortedPlayers = playerPositions
+    .map((position, index) => ({
+      username: players[index]?.username || `Player ${index + 1}`,
+      position,
+    }))
+    .sort((a, b) => b.position - a.position); // 降順でソート
+
+  useEffect(() => {
+    // 誰かがゴールに到達した場合
+    if (playerPositions.some((position) => position >= goal)) {
+      // 結果画面へ遷移
+      router.push(`/result?rankings=${encodeURIComponent(JSON.stringify(sortedPlayers.map((player) => player.username)))}`);
+      console.log(sortedPlayers);
+    }
+  }, [playerPositions, goal, router, sortedPlayers]);
+
   return (
     <div className="relative min-h-screen w-full items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 flex flex-col gap-6 p-6">
       <div className="flex flex-col w-fit gap-4">
@@ -428,7 +446,7 @@ export default function Game() {
                 <span className="text-purple-800 text-lg font-bold">{timer}s</span>
               </div>
               <div className="flex flex-col items-center justify-center gap-4">
-                <h3 className="text-xl font-bold text-purple-800 mb-2">{isCurrentUserTurn ? "あなたの番です" : `プレイヤー${currentPlayer + 1}の番です`}</h3>
+                <h3 className="text-xl font-bold text-purple-800 mb-2">{isCurrentUserTurn ? "あなたの番です" : `${players[currentPlayerIndex]?.username || ""}の番です`}</h3>
                 <p className="text-lg font-medium text-gray-700 mb-4">{rouletteResult}文字の単語を入力してください</p>
                 <WordInput
                   lastCharacter={lastCharacter}
@@ -469,7 +487,8 @@ export default function Game() {
           <div className="text-center bg-white rounded-xl p-8 shadow-2xl">
             <h2 className="text-3xl font-bold text-purple-800 mb-6 flex items-center justify-center gap-2">
               <Gamepad2 className="w-8 h-8" />
-              プレイヤー{currentPlayer + 1}の番
+              {/* プレイヤー{currentPlayer + 1}の番 */}
+              {players[currentPlayerIndex]?.username || ""}の番
             </h2>
             <Roulette
               isLarge={isRouletteLarge}
