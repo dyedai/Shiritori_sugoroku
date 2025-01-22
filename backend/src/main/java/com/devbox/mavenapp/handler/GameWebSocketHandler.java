@@ -1,6 +1,7 @@
 package com.devbox.mavenapp.handler;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,9 +48,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        logger.info("Message received: sessionId={}, payload={}", session.getId(), message.getPayload());
+        logger.info("Message received: sessionId={}, payload={}", session.getId(), message.getPayload().getBytes(StandardCharsets.UTF_8).toString());
         try {
-            GameMessage gameMessage = objectMapper.readValue(message.getPayload(), GameMessage.class);
+            GameMessage gameMessage = objectMapper.readValue(message.getPayload().getBytes(StandardCharsets.UTF_8), GameMessage.class);
 
             synchronized (players) {
                 switch (gameMessage.getType()) {
