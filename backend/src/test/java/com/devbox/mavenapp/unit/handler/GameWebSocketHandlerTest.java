@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -47,12 +48,36 @@ class GameWebSocketHandlerTest {
         List<Player> players = getHandlerPlayers();
         assertEquals(1, players.size(), "One player should be added");
         assertEquals(0, players.get(0).getId(), "Player ID should be 0");
+
+        assertEquals(0, getHandlerWordHistory().size(), "wordHistory size should be 0");
+    }
+
+    @Test
+    void testHandleTextMessage_StartRoulette() throws Exception {
+        joinPlayer(session1, 0);
+
+        GameMessage gameMessage = new GameMessage();
+        gameMessage.setType("startRoulette");
+
+        String payload = objectMapper.writeValueAsString(gameMessage);
+        TextMessage textMessage = new TextMessage(payload);
+
+        handler.handleTextMessage(session1, textMessage);
+
+        ArgumentCaptor<TextMessage> captor = ArgumentCaptor.forClass(TextMessage.class);
+        verify(session1, atLeast(1)).sendMessage(captor.capture());
+
+        TextMessage sentMessage = captor.getValue();
+        GameMessage response = new ObjectMapper().readValue(sentMessage.getPayload(), GameMessage.class);
+
+        assertEquals("rouletteResult", response.getType(), "Message type should be rouletteResult");
+
     }
 
     @Test
     void testHandleTextMessage_CheckWord_Valid() throws Exception {
         //handler.afterConnectionEstablished(session1);
-        joinPlayer(session1,0);
+        joinPlayer(session1, 0);
 
         GameMessage gameMessage = new GameMessage();
         gameMessage.setType("checkWord");
@@ -70,6 +95,36 @@ class GameWebSocketHandlerTest {
         List<Player> players = getHandlerPlayers();
         assertEquals("りんご".length(), players.get(0).getPosition(), "Player position should update");
         assertTrue(getHandlerWordHistory().contains("りんご"), "Word should be added to history");
+    }
+
+    @Test
+    void testHandleTextMessage_CheckWord_used() throws Exception {
+        joinPlayer(session1, 0);
+        joinPlayer(session2, 1);
+
+        GameMessage gameMessage1 = new GameMessage();
+        gameMessage1.setType("checkWord");
+        gameMessage1.setWord("りんご");
+        gameMessage1.setPlayerId(0);
+
+        String payload1 = objectMapper.writeValueAsString(gameMessage1);
+        TextMessage textMessage1 = new TextMessage(payload1);
+
+        handler.handleTextMessage(session1, textMessage1);
+
+        GameMessage gameMessage2 = new GameMessage();
+        gameMessage2.setType("checkWord");
+        gameMessage2.setWord("りんご");
+        gameMessage2.setPlayerId(1);
+
+        String payload2 = objectMapper.writeValueAsString(gameMessage2);
+        TextMessage textMessage2 = new TextMessage(payload2);
+
+        handler.handleTextMessage(session2, textMessage2);
+
+        
+        List<Player> players = getHandlerPlayers();
+        assertEquals(0, players.get(1).getPosition(), "Player position should not update");
     }
 
     @Test
@@ -124,6 +179,11 @@ class GameWebSocketHandlerTest {
 
         handler.afterConnectionEstablished(session);
         handler.handleTextMessage(session, new TextMessage(payload));
+    }
+
+    private GameMessage responseMessage(WebSocketSession session, TextMessage message) throws Exception {
+        GameMessage gameMessage = objectMapper.readValue(message.getPayload(), GameMessage.class);
+        return gameMessage;
     }
 
     private ConcurrentHashMap<String, WebSocketSession> getHandlerSessions() throws Exception {
