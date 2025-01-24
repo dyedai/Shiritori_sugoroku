@@ -1,5 +1,6 @@
-package com.devbox.mavenapp.handler;
+package com.devbox.mavenapp.unit.handler;
 
+import com.devbox.mavenapp.handler.GameWebSocketHandler;
 import com.devbox.mavenapp.model.GameMessage;
 import com.devbox.mavenapp.model.GameState;
 import com.devbox.mavenapp.model.Player;
@@ -13,6 +14,9 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -38,7 +42,6 @@ class GameWebSocketHandlerTest {
 
     @Test
     void testAfterConnectionEstablished() throws Exception {
-        //handler.afterConnectionEstablished(session1);
         joinPlayer(session1,0);
 
         ConcurrentHashMap<String, WebSocketSession> sessions = getHandlerSessions();
@@ -62,7 +65,7 @@ class GameWebSocketHandlerTest {
         String payload = objectMapper.writeValueAsString(gameMessage);
         TextMessage textMessage = new TextMessage(payload);
 
-        handler.handleTextMessage(session1, textMessage);
+        reflectionHandleTextMessage(session1, textMessage);
 
         ArgumentCaptor<TextMessage> captor = ArgumentCaptor.forClass(TextMessage.class);
         verify(session1, atLeast(1)).sendMessage(captor.capture());
@@ -76,7 +79,6 @@ class GameWebSocketHandlerTest {
 
     @Test
     void testHandleTextMessage_CheckWord_Valid() throws Exception {
-        //handler.afterConnectionEstablished(session1);
         joinPlayer(session1, 0);
 
         GameMessage gameMessage = new GameMessage();
@@ -87,10 +89,7 @@ class GameWebSocketHandlerTest {
         String payload = objectMapper.writeValueAsString(gameMessage);
         TextMessage textMessage = new TextMessage(payload);
 
-        //GameWebSocketHandler spyHandler = Mockito.spy(handler);
-        //doReturn(true).when(spyHandler).validateWordWithWeblio("example");
-
-        handler.handleTextMessage(session1, textMessage);
+        reflectionHandleTextMessage(session1, textMessage);
 
         List<Player> players = getHandlerPlayers();
         assertEquals("りんご".length(), players.get(0).getPosition(), "Player position should update");
@@ -110,7 +109,7 @@ class GameWebSocketHandlerTest {
         String payload1 = objectMapper.writeValueAsString(gameMessage1);
         TextMessage textMessage1 = new TextMessage(payload1);
 
-        handler.handleTextMessage(session1, textMessage1);
+        reflectionHandleTextMessage(session1, textMessage1);        
 
         GameMessage gameMessage2 = new GameMessage();
         gameMessage2.setType("checkWord");
@@ -120,8 +119,7 @@ class GameWebSocketHandlerTest {
         String payload2 = objectMapper.writeValueAsString(gameMessage2);
         TextMessage textMessage2 = new TextMessage(payload2);
 
-        handler.handleTextMessage(session2, textMessage2);
-
+        reflectionHandleTextMessage(session2, textMessage2);
         
         List<Player> players = getHandlerPlayers();
         assertEquals(0, players.get(1).getPosition(), "Player position should not update");
@@ -129,7 +127,6 @@ class GameWebSocketHandlerTest {
 
     @Test
     void testHandleTextMessage_CheckWord_Invalid() throws Exception {
-        //handler.afterConnectionEstablished(session1);
         joinPlayer(session1,0);
 
         GameMessage gameMessage = new GameMessage();
@@ -140,10 +137,7 @@ class GameWebSocketHandlerTest {
         String payload = objectMapper.writeValueAsString(gameMessage);
         TextMessage textMessage = new TextMessage(payload);
 
-        //GameWebSocketHandler spyHandler = Mockito.spy(handler);
-        //doReturn(false).when(spyHandler).validateWordWithWeblio("invalidword123");
-
-        handler.handleTextMessage(session1, textMessage);
+        reflectionHandleTextMessage(session1, textMessage);        
 
         List<Player> players = getHandlerPlayers();
         assertEquals(0, players.get(0).getPosition(), "Player position should not update");
@@ -178,7 +172,7 @@ class GameWebSocketHandlerTest {
         TextMessage textMessage = new TextMessage(payload);
 
         handler.afterConnectionEstablished(session);
-        handler.handleTextMessage(session, new TextMessage(payload));
+        reflectionHandleTextMessage(session, textMessage);
     }
 
     private GameMessage responseMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -202,5 +196,11 @@ class GameWebSocketHandlerTest {
         var field = target.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         return field.get(target);
+    }
+
+    private void reflectionHandleTextMessage(WebSocketSession session, TextMessage textMessage) throws Exception {
+        Method method = GameWebSocketHandler.class.getDeclaredMethod("handleTextMessage", WebSocketSession.class, TextMessage.class);
+        method.setAccessible(true);
+        method.invoke(handler, session, textMessage);
     }
 }
