@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
-Test set: com.devbox.mavenapp.AppTest
+Test set: com.devbox.mavenapp.unit.service.GameServiceTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec

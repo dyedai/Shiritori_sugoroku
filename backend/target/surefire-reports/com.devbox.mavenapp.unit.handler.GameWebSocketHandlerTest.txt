@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: com.devbox.mavenapp.unit.handler.GameWebSocketHandlerTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.003 sec <<< FAILURE!
+com.devbox.mavenapp.unit.handler.GameWebSocketHandlerTest.testHandleTextMessage()  Time elapsed: 0.003 sec  <<< FAILURE!
+java.lang.NullPointerException: Cannot invoke "com.devbox.mavenapp.handler.GameWebSocketHandler.afterConnectionEstablished(org.springframework.web.socket.WebSocketSession)" because "this.handler" is null
+	at com.devbox.mavenapp.unit.handler.GameWebSocketHandlerTest.testHandleTextMessage(GameWebSocketHandlerTest.java:33)
+
